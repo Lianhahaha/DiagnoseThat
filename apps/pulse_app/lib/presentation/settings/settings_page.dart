@@ -1,0 +1,1989 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:provider/provider.dart';
+import 'package:pulse_protocol/pulse_constants.dart';
+
+import '../../application/assistant_controller.dart';
+import '../../application/connection_controller.dart';
+import '../../application/diagnostics_controller.dart';
+import '../../application/settings_controller.dart';
+import '../../application/shell_navigation.dart';
+import '../../application/timeline_library_controller.dart';
+import '../../application/timeline_session_controller.dart';
+import '../../application/update_check_controller.dart';
+import '../../app/theme/pulse_theme.dart';
+import '../../assistant/local_ai_http.dart';
+import '../../ipc/pulse_ipc_client.dart';
+import '../../platform/browser.dart';
+import '../../platform/local_ai_token_store.dart';
+import '../../platform/pulse_deployment.dart';
+import '../components/pulse_app_bar.dart';
+import '../components/pulse_badge.dart';
+import '../components/pulse_button.dart';
+import '../components/pulse_card.dart';
+import '../components/pulse_section_header.dart';
+import '../utils/pulse_snack.dart';
+import '../utils/pulse_user_errors.dart';
+import 'settings_category.dart';
+
+/// Snap arbitrary persisted caps onto the Settings dropdown presets.
+int _nearestTimelineCap(int value) {
+  const presets = [500, 2000, 10000, 50000, 100000];
+  var best = presets.first;
+  var bestDelta = (value - best).abs();
+  for (final p in presets.skip(1)) {
+    final d = (value - p).abs();
+    if (d < bestDelta) {
+      best = p;
+      bestDelta = d;
+    }
+  }
+  return best;
+}
+
+int _nearestCooldown(int value) {
+  const presets = [5, 15, 30, 60];
+  var best = presets.first;
+  var bestDelta = (value - best).abs();
+  for (final p in presets.skip(1)) {
+    final d = (value - p).abs();
+    if (d < bestDelta) {
+      best = p;
+      bestDelta = d;
+    }
+  }
+  return best;
+}
+
+extension on SettingsCategoryId {
+  String get label => switch (this) {
+        SettingsCategoryId.general => 'General',
+        SettingsCategoryId.appearance => 'Appearance',
+        SettingsCategoryId.background => 'Background',
+        SettingsCategoryId.systemHealth => 'System Health',
+        SettingsCategoryId.timeline => 'Timeline',
+        SettingsCategoryId.diagnostics => 'Diagnostics',
+        SettingsCategoryId.performance => 'Performance',
+        SettingsCategoryId.privacy => 'Privacy',
+        SettingsCategoryId.updates => 'Updates',
+        SettingsCategoryId.developer => 'Developer',
+      };
+
+  IconData get icon => switch (this) {
+        SettingsCategoryId.general => LucideIcons.settings,
+        SettingsCategoryId.appearance => LucideIcons.palette,
+        SettingsCategoryId.background => LucideIcons.panelBottom,
+        SettingsCategoryId.systemHealth => LucideIcons.heartPulse,
+        SettingsCategoryId.timeline => LucideIcons.listOrdered,
+        SettingsCategoryId.diagnostics => LucideIcons.bug,
+        SettingsCategoryId.performance => LucideIcons.gauge,
+        SettingsCategoryId.privacy => LucideIcons.shieldCheck,
+        SettingsCategoryId.updates => LucideIcons.download,
+        SettingsCategoryId.developer => LucideIcons.codeXml,
+      };
+}
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  SettingsCategoryId _category = SettingsCategoryId.general;
+  late final TextEditingController _customHexController;
+  ShellNavigation? _shellNav;
+
+  @override
+  void initState() {
+    super.initState();
+    _customHexController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(context.read<DiagnosticsController>().refresh());
+      final settings = context.read<SettingsController>();
+      _syncHexField(settings.customAccentArgb);
+      try {
+        _shellNav = context.read<ShellNavigation>();
+        _shellNav!.addListener(_onShellNavigation);
+        _onShellNavigation();
+      } on ProviderNotFoundException {
+        // Isolated widget tests may omit ShellNavigation.
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _shellNav?.removeListener(_onShellNavigation);
+    _customHexController.dispose();
+    super.dispose();
+  }
+
+  void _onShellNavigation() {
+    final nav = _shellNav;
+    if (nav == null || !mounted) return;
+    final category = nav.pendingSettingsCategory;
+    if (category == null) return;
+    setState(() => _category = category);
+    nav.consumeSettingsCategory();
+  }
+
+  void _syncHexField(int argb) {
+    final hex = (argb & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase();
+    if (_customHexController.text.toUpperCase() != hex) {
+      _customHexController.text = hex;
+    }
+  }
+
+  void _snack(BuildContext context, String message, {bool error = false}) {
+    if (error) {
+      PulseSnack.error(context, PulseUserErrors.fromMessage(message));
+    } else {
+      PulseSnack.success(context, message);
+    }
+  }
+
+  Future<void> _confirm(
+    BuildContext context, {
+    required String title,
+    required String body,
+    required Future<void> Function() onConfirm,
+  }) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: PulseTokens.surfaceElevated,
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await onConfirm();
+      if (context.mounted) _snack(context, 'Done');
+    }
+  }
+
+  int? _parseHexColor(String raw) {
+    var s = raw.trim();
+    if (s.startsWith('#')) s = s.substring(1);
+    if (s.length == 8) s = s.substring(2);
+    if (s.length != 6) return null;
+    final value = int.tryParse(s, radix: 16);
+    if (value == null) return null;
+    return 0xFF000000 | value;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Theme.of(context);
+    final connectionLabel = context.select<ConnectionController, String>(
+      (c) => c.statusLabel,
+    );
+    final state = context.select<PulseIpcClient, IpcConnectionState>(
+      (c) => c.status.state,
+    );
+    final settings = context.watch<SettingsController>();
+    final ipc = context.watch<PulseIpcClient>();
+    final diag = context.watch<DiagnosticsController>();
+    final timeline = context.watch<TimelineSessionController>();
+    final serviceVersion = ipc.status.serviceVersion.isEmpty
+        ? '—'
+        : ipc.status.serviceVersion;
+    final windows = [
+      if (diag.snapshot != null) ...[
+        diag.snapshot!.windowsEdition,
+        diag.snapshot!.windowsVersion,
+      ],
+    ].where((s) => s.trim().isNotEmpty).join(' ');
+    final windowsLabel = windows.isNotEmpty
+        ? windows
+        : (state == IpcConnectionState.connected
+            ? 'Loading from PulseService…'
+            : 'Unavailable — PulseService offline');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PulseAppBar(
+          title: widget.title,
+          connectionState: state,
+          connectionLabel: connectionLabel,
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              PulseTokens.pagePadX,
+              16,
+              PulseTokens.pagePadX,
+              PulseTokens.pagePadBottom,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                  width: 200,
+                  child: _CategoryRail(
+                    selected: _category,
+                    onSelect: (c) => setState(() => _category = c),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(right: 4),
+                    children: [
+                      PulseSectionHeader(
+                        title: _category.label,
+                        subtitle: _categorySubtitle(_category),
+                      ),
+                      const SizedBox(height: PulseTokens.spaceMd),
+                      ..._buildCategoryContent(
+                        context,
+                        category: _category,
+                        settings: settings,
+                        timeline: timeline,
+                        diag: diag,
+                        serviceVersion: serviceVersion,
+                        windowsLabel: windowsLabel,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _categorySubtitle(SettingsCategoryId category) {
+    return switch (category) {
+      SettingsCategoryId.general =>
+        'Welcome and onboarding. Density and motion live under Appearance.',
+      SettingsCategoryId.appearance =>
+        'Theme, accent color, density, text size, and motion.',
+      SettingsCategoryId.background =>
+        'System tray, startup, and local critical-condition notifications.',
+      SettingsCategoryId.systemHealth =>
+        'Units and display preferences for System Health.',
+      SettingsCategoryId.timeline =>
+        'In-memory event buffer and live monitoring.',
+      SettingsCategoryId.diagnostics =>
+        'Local logging and advanced diagnostic surfaces.',
+      SettingsCategoryId.performance =>
+        'Balance responsiveness, detail, and battery.',
+      SettingsCategoryId.privacy =>
+        'Everything stays on this PC. No accounts or telemetry.',
+      SettingsCategoryId.updates => 'App and service version information.',
+      SettingsCategoryId.developer =>
+        'Export, import, and reset local preferences.',
+    };
+  }
+
+  List<Widget> _buildCategoryContent(
+    BuildContext context, {
+    required SettingsCategoryId category,
+    required SettingsController settings,
+    required TimelineSessionController timeline,
+    required DiagnosticsController diag,
+    required String serviceVersion,
+    required String windowsLabel,
+  }) {
+    return switch (category) {
+      SettingsCategoryId.general => [
+          _SettingsGroup(
+            title: 'Onboarding',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.sparkles,
+                title: 'Reset onboarding',
+                subtitle: 'Show the welcome screen again on next launch',
+                trailing: PulseButton(
+                  label: 'Reset',
+                  icon: LucideIcons.rotateCcw,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () => _confirm(
+                    context,
+                    title: 'Reset onboarding?',
+                    body:
+                        'The welcome screen will appear again the next time Pulse starts.',
+                    onConfirm: settings.resetOnboarding,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.appearance => [
+          _SettingsGroup(
+            title: 'Theme',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.moon,
+                title: 'Theme mode',
+                subtitle: 'Follow system, or force light / dark',
+                trailing: SegmentedButton<String>(
+                  segments: const [
+                    ButtonSegment(value: 'system', label: Text('System')),
+                    ButtonSegment(value: 'light', label: Text('Light')),
+                    ButtonSegment(value: 'dark', label: Text('Dark')),
+                  ],
+                  selected: {settings.themeMode},
+                  onSelectionChanged: (s) async {
+                    await settings.setThemeMode(s.first);
+                    if (context.mounted) {
+                      _snack(context, 'Theme: ${s.first}');
+                    }
+                  },
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: PulseTokens.spaceMd),
+          _SettingsGroup(
+            title: 'Accent',
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                child: Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    for (final preset in [
+                      ('lime', PulseThemeData.accentForPreset('lime', Theme.of(context).brightness)),
+                      ('blue', PulseThemeData.accentForPreset('blue', Theme.of(context).brightness)),
+                      ('green', PulseThemeData.accentForPreset('green', Theme.of(context).brightness)),
+                      ('purple', PulseThemeData.accentForPreset('purple', Theme.of(context).brightness)),
+                      ('orange', PulseThemeData.accentForPreset('orange', Theme.of(context).brightness)),
+                    ])
+                      _AccentChip(
+                        label: preset.$1,
+                        color: preset.$2,
+                        selected: settings.accentPreset == preset.$1,
+                        onTap: () async {
+                          await settings.setAccentPreset(preset.$1);
+                          if (context.mounted) {
+                            _snack(context, 'Accent: ${preset.$1}');
+                          }
+                        },
+                      ),
+                    _AccentChip(
+                      label: 'custom',
+                      color: Color(settings.customAccentArgb),
+                      selected: settings.accentPreset == 'custom',
+                      onTap: () async {
+                        await settings.setAccentPreset('custom');
+                        _syncHexField(settings.customAccentArgb);
+                        if (context.mounted) {
+                          _snack(context, 'Accent: custom');
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              if (settings.accentPreset == 'custom') ...[
+                const SoftDivider(indent: 16),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: Color(settings.customAccentArgb),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: PulseTokens.stroke),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _customHexController,
+                          decoration: const InputDecoration(
+                            labelText: 'Custom hex',
+                            hintText: '60CDFF',
+                            prefixText: '#',
+                            isDense: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9a-fA-F]'),
+                            ),
+                            LengthLimitingTextInputFormatter(6),
+                          ],
+                          onSubmitted: (raw) async {
+                            final argb = _parseHexColor(raw);
+                            if (argb == null) {
+                              if (context.mounted) {
+                                _snack(
+                                  context,
+                                  'Enter a 6-digit hex color',
+                                  error: true,
+                                );
+                              }
+                              return;
+                            }
+                            await settings.setCustomAccentArgb(argb);
+                            if (context.mounted) {
+                              _snack(context, 'Custom accent updated');
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      PulseButton(
+                        label: 'Apply',
+                        variant: PulseButtonVariant.secondary,
+                        onPressed: () async {
+                          final argb =
+                              _parseHexColor(_customHexController.text);
+                          if (argb == null) {
+                            _snack(
+                              context,
+                              'Enter a 6-digit hex color',
+                              error: true,
+                            );
+                            return;
+                          }
+                          await settings.setCustomAccentArgb(argb);
+                          if (context.mounted) {
+                            _snack(context, 'Custom accent updated');
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: PulseTokens.spaceMd),
+          _SettingsGroup(
+            title: 'Density & motion',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.minimize2,
+                title: 'Compact mode',
+                subtitle: 'Slightly denser typography',
+                trailing: Switch(
+                  value: settings.compactMode,
+                  onChanged: (v) async {
+                    await settings.setCompactMode(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v ? 'Compact mode on' : 'Compact mode off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.type,
+                title: 'Text size',
+                subtitle: '${settings.textScale.toStringAsFixed(2)}×',
+                trailing: _PrefDoubleSlider(
+                  value: settings.textScale,
+                  min: 0.9,
+                  max: 1.3,
+                  divisions: 8,
+                  labelBuilder: (v) => '${v.toStringAsFixed(2)}×',
+                  onCommit: (v) async {
+                    await settings.setTextScale(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        'Text size ${v.toStringAsFixed(2)}×',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.sparkles,
+                title: 'Animations',
+                subtitle: settings.performanceMode == 'battery'
+                    ? 'Disabled while Performance mode is Battery'
+                    : 'Motion for panels and transitions',
+                trailing: Switch(
+                  value: settings.animationsEnabled,
+                  onChanged: settings.performanceMode == 'battery'
+                      ? null
+                      : (v) async {
+                          await settings.setAnimationsEnabled(v);
+                          if (context.mounted) {
+                            _snack(
+                              context,
+                              v ? 'Animations on' : 'Animations off',
+                            );
+                          }
+                        },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.gauge,
+                title: 'Animation speed',
+                subtitle: '${settings.animationSpeed.toStringAsFixed(2)}×',
+                trailing: _PrefDoubleSlider(
+                  value: settings.animationSpeed,
+                  min: 0.5,
+                  max: 1.5,
+                  divisions: 20,
+                  labelBuilder: (v) => '${v.toStringAsFixed(2)}×',
+                  onCommit: (v) async {
+                    await settings.setAnimationSpeed(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        'Animation speed ${v.toStringAsFixed(2)}×',
+                      );
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.background => [
+          _SettingsGroup(
+            title: 'Tray',
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Text(
+                  'Background Mode keeps Pulse running in the system tray so it can monitor your system and notify you about critical conditions even when the main window is closed.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: PulseTokens.textSecondary,
+                        height: 1.4,
+                      ),
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.panelBottom,
+                title: 'Background Mode',
+                subtitle:
+                    'Keep Pulse running in the system tray when the window is closed.',
+                trailing: Switch(
+                  value: settings.backgroundMode,
+                  onChanged: (v) async {
+                    await settings.setBackgroundMode(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v ? 'Background Mode on' : 'Background Mode off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.power,
+                title: 'Start Pulse with Windows',
+                subtitle:
+                    'Launch Pulse in the background when Windows starts (user session only).',
+                trailing: Switch(
+                  value: settings.startWithWindows,
+                  onChanged: (v) async {
+                    await settings.setStartWithWindows(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v
+                            ? 'Start with Windows enabled'
+                            : 'Start with Windows disabled',
+                      );
+                    }
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Text(
+                  'PulseService continues to run independently. Exiting Pulse only closes the desktop application.',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: PulseTokens.textTertiary,
+                        height: 1.4,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          _SettingsGroup(
+            title: 'Notifications',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.bell,
+                title: 'System Notifications',
+                subtitle:
+                    'Allow Pulse to notify you when critical system conditions are detected.',
+                trailing: Switch(
+                  value: settings.systemNotifications,
+                  onChanged: (v) async {
+                    await settings.setSystemNotifications(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v
+                            ? 'System notifications on'
+                            : 'System notifications off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.timer,
+                title: 'Notification cooldown',
+                subtitle:
+                    '${settings.notificationCooldownMinutes} min between repeats for the same alert',
+                trailing: DropdownButton<int>(
+                  value: _nearestCooldown(settings.notificationCooldownMinutes),
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: 5, child: Text('5 min')),
+                    DropdownMenuItem(value: 15, child: Text('15 min')),
+                    DropdownMenuItem(value: 30, child: Text('30 min')),
+                    DropdownMenuItem(value: 60, child: Text('60 min')),
+                  ],
+                  onChanged: (v) async {
+                    if (v == null) return;
+                    await settings.setNotificationCooldownMinutes(v);
+                    if (context.mounted) {
+                      _snack(context, 'Cooldown set to $v min');
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.systemHealth => [
+          _SettingsGroup(
+            title: 'Units',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.binary,
+                title: 'Byte units',
+                subtitle: settings.byteUnitBinary
+                    ? 'Binary (KiB / MiB, base 1024)'
+                    : 'Decimal (KB / MB, base 1000)',
+                trailing: Switch(
+                  value: settings.byteUnitBinary,
+                  onChanged: (v) async {
+                    await settings.setByteUnitBinary(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v ? 'Binary byte units' : 'Decimal byte units',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.thermometer,
+                title: 'Temperature',
+                subtitle: settings.temperatureCelsius
+                    ? 'Celsius (°C)'
+                    : 'Fahrenheit (°F)',
+                trailing: Switch(
+                  value: settings.temperatureCelsius,
+                  onChanged: (v) async {
+                    await settings.setTemperatureCelsius(v);
+                    if (context.mounted) {
+                      _snack(context, v ? 'Celsius' : 'Fahrenheit');
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.clock,
+                title: 'Clock format',
+                subtitle: settings.clock24h ? '24-hour' : '12-hour',
+                trailing: Switch(
+                  value: settings.clock24h,
+                  onChanged: (v) async {
+                    await settings.setClock24h(v);
+                    if (context.mounted) {
+                      _snack(context, v ? '24-hour clock' : '12-hour clock');
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.activity,
+                title: 'Sample rate',
+                subtitle: 'Health metrics refresh ~1 Hz from PulseService',
+                trailing: const PulseBadge(
+                  label: '~1 Hz',
+                  compact: true,
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.timeline => [
+          _SettingsGroup(
+            title: 'Buffer',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.listOrdered,
+                title: 'Maximum stored events',
+                subtitle:
+                    '${settings.maxStoredEvents} in memory · higher limits use more RAM',
+                trailing: DropdownButton<int>(
+                  value: _nearestTimelineCap(settings.maxStoredEvents),
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(value: 500, child: Text('500')),
+                    DropdownMenuItem(value: 2000, child: Text('2,000')),
+                    DropdownMenuItem(value: 10000, child: Text('10,000')),
+                    DropdownMenuItem(value: 50000, child: Text('50,000')),
+                    DropdownMenuItem(value: 100000, child: Text('100,000')),
+                  ],
+                  onChanged: (v) async {
+                    if (v == null) return;
+                    await settings.setMaxStoredEvents(v);
+                    if (context.mounted) {
+                      _snack(context, 'Timeline limit set to $v');
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.download,
+                title: 'Startup snapshot size',
+                subtitle: '${settings.startupSnapshotSize} events on connect',
+                trailing: _PrefSlider(
+                  value: settings.startupSnapshotSize,
+                  min: 20,
+                  max: 500,
+                  divisions: 48,
+                  onCommit: (v) async {
+                    await settings.setStartupSnapshotSize(v);
+                    await timeline.reloadSnapshot();
+                    if (context.mounted) {
+                      _snack(context, 'Snapshot size set to $v');
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.arrowDownToLine,
+                title: 'Auto-scroll',
+                subtitle: 'Keep Timeline pinned to newest events',
+                trailing: Switch(
+                  value: settings.autoScroll,
+                  onChanged: (v) async {
+                    await settings.setAutoScroll(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v ? 'Auto-scroll on' : 'Auto-scroll off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.radio,
+                title: 'Live Monitoring',
+                subtitle: 'Receive pushed Event Log updates',
+                trailing: Switch(
+                  value: settings.liveMonitoringEnabled,
+                  onChanged: (v) async {
+                    await settings.setLiveMonitoringEnabled(v);
+                    try {
+                      await timeline.applyLiveMonitoringPreference();
+                      if (context.mounted) {
+                        _snack(
+                          context,
+                          v
+                              ? 'Live Monitoring enabled'
+                              : 'Live Monitoring paused',
+                        );
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        _snack(context, 'Failed: $e', error: true);
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: PulseTokens.spaceMd),
+          const _HiddenEventTypesGroup(),
+        ],
+      SettingsCategoryId.diagnostics => [
+          _SettingsGroup(
+            title: 'Logging',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.bug,
+                title: 'Enable debug logging',
+                subtitle: 'Verbose AppLogger lines (local only)',
+                trailing: Switch(
+                  value: settings.debugLogging,
+                  onChanged: (v) async {
+                    await settings.setDebugLogging(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v ? 'Debug logging on' : 'Debug logging off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.layers,
+                title: 'Show advanced diagnostics',
+                subtitle:
+                    'Show identity, IPC throughput, reconnect history, and developer tools on Diagnostics',
+                trailing: Switch(
+                  value: settings.showAdvancedDiagnostics,
+                  onChanged: (v) async {
+                    await settings.setShowAdvancedDiagnostics(v);
+                    if (context.mounted) {
+                      _snack(
+                        context,
+                        v
+                            ? 'Advanced diagnostics on'
+                            : 'Advanced diagnostics off',
+                      );
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.fileText,
+                title: 'Export logs',
+                subtitle: 'Write recent app log lines to Downloads/Pulse',
+                trailing: PulseButton(
+                  label: 'Export',
+                  icon: LucideIcons.download,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () async {
+                    try {
+                      final saved = await diag.exportLogsOnly();
+                      if (context.mounted) _snack(context, saved.summary);
+                    } catch (e) {
+                      if (context.mounted) {
+                        _snack(context, 'Failed: $e', error: true);
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.rotateCcw,
+                title: 'Reset diagnostics',
+                subtitle: 'Clear client ping / message counters',
+                trailing: PulseButton(
+                  label: 'Reset',
+                  icon: LucideIcons.eraser,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () {
+                    diag.resetClientCounters();
+                    _snack(context, 'Diagnostics counters reset');
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.performance => [
+          _SettingsGroup(
+            title: 'Mode',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.gauge,
+                title: 'Performance mode',
+                subtitle: switch (settings.performanceMode) {
+                  'performance' =>
+                    'Preference stored for future refresh/history tuning; UI same as Balanced today',
+                  'battery' =>
+                    'Disables animations (same as turning Animations off)',
+                  _ => 'Balanced defaults for everyday use',
+                },
+                trailing: DropdownButton<String>(
+                  value: settings.performanceMode,
+                  underline: const SizedBox.shrink(),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'balanced',
+                      child: Text('Balanced'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'performance',
+                      child: Text('Performance'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'battery',
+                      child: Text('Battery'),
+                    ),
+                  ],
+                  onChanged: (v) async {
+                    if (v == null) return;
+                    await settings.setPerformanceMode(v);
+                    if (context.mounted) {
+                      _snack(context, 'Performance mode: $v');
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.privacy => [
+          _SettingsGroup(
+            title: 'Local-first',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.shieldCheck,
+                title: 'Local-first',
+                subtitle: 'All observation data stays on this PC',
+                trailing: Icon(
+                  LucideIcons.check,
+                  size: 18,
+                  color: PulseTokens.success,
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.eyeOff,
+                title: 'No telemetry',
+                subtitle: 'Pulse does not send analytics or crash reports',
+                trailing: Icon(
+                  LucideIcons.check,
+                  size: 18,
+                  color: PulseTokens.success,
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.userX,
+                title: 'Mask personal details in exports',
+                subtitle:
+                    'Hide user and computer names, account SIDs, IP and MAC '
+                    'addresses and serial numbers in reports and exports, so '
+                    'they are safe to share',
+                trailing: Switch(
+                  value: settings.maskPersonalDataInExports,
+                  onChanged: settings.setMaskPersonalDataInExports,
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.history,
+                title: 'Clear local history',
+                subtitle: 'Remove Timeline events from this session',
+                trailing: PulseButton(
+                  label: 'Clear',
+                  icon: LucideIcons.trash2,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () => _confirm(
+                    context,
+                    title: 'Clear local history?',
+                    body:
+                        'This clears the in-memory Timeline. It does not modify Windows Event Logs.',
+                    onConfirm: timeline.clearTimeline,
+                  ),
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.slidersHorizontal,
+                title: 'Reset all settings',
+                subtitle: 'Restore defaults and clear preferences',
+                trailing: PulseButton(
+                  label: 'Reset',
+                  icon: LucideIcons.rotateCcw,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () => _confirm(
+                    context,
+                    title: 'Reset all settings?',
+                    body:
+                        'Timeline preferences and interface options return to '
+                        'defaults. A saved LM Studio API key is removed.',
+                    onConfirm: () async {
+                      final tokenStore = _assistantTokenStore(context);
+                      await settings.resetAll();
+                      tokenStore?.delete();
+                      await timeline.applyLiveMonitoringPreference();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: PulseTokens.spaceLg),
+          const _AssistantConnectionGroup(),
+        ],
+      SettingsCategoryId.updates => [
+          // The Store edition is updated by the Store.
+          if (!const WindowsPulseDeployment().isPackagedMsix)
+            const _UpdatesGroup(),
+          _SettingsGroup(
+            title: 'About',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.info,
+                title: 'Pulse version',
+                subtitle: kAppVersion,
+                trailing: const PulseBadge(
+                  label: 'Bootstrap',
+                  tone: PulseBadgeTone.accent,
+                  compact: true,
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.calendar,
+                title: 'Build date',
+                subtitle: SettingsController.buildDate,
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.server,
+                title: 'Service version',
+                subtitle: serviceVersion,
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.hash,
+                title: 'Protocol version',
+                subtitle: '$kProtocolVersion',
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.monitor,
+                title: 'Windows version',
+                subtitle: windowsLabel,
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.externalLink,
+                title: 'Releases',
+                subtitle: SettingsController.releasesUrl,
+                trailing: IconButton(
+                  tooltip: 'Copy URL',
+                  icon: const Icon(LucideIcons.copy, size: 16),
+                  onPressed: () async {
+                    await Clipboard.setData(
+                      const ClipboardData(
+                        text: SettingsController.releasesUrl,
+                      ),
+                    );
+                    if (context.mounted) {
+                      _snack(context, 'Release URL copied');
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      SettingsCategoryId.developer => [
+          _SettingsGroup(
+            title: 'Settings data',
+            children: [
+              _SettingsRow(
+                icon: LucideIcons.upload,
+                title: 'Export settings',
+                subtitle:
+                    'Write JSON to Downloads/Pulse/settings-export.json',
+                trailing: PulseButton(
+                  label: 'Export',
+                  icon: LucideIcons.download,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () async {
+                    try {
+                      final saved = await settings.exportSettingsJson();
+                      if (context.mounted) {
+                        _snack(context, saved.summary);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        _snack(context, 'Failed: $e', error: true);
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.import,
+                title: 'Restore from last export',
+                subtitle: 'Import Downloads/Pulse/settings-export.json',
+                trailing: PulseButton(
+                  label: 'Import',
+                  icon: LucideIcons.upload,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () => _confirm(
+                    context,
+                    title: 'Import settings?',
+                    body:
+                        'Current preferences will be replaced with the last export file.',
+                    onConfirm: () async {
+                      await settings.importSettingsFromLastExport();
+                      await timeline.applyLiveMonitoringPreference();
+                    },
+                  ),
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.folder,
+                title: 'Export directory',
+                subtitle: settings.exportDirectory.isEmpty
+                    ? 'Default: Downloads/Pulse'
+                    : settings.exportDirectory,
+                trailing: PulseButton(
+                  label: settings.exportDirectory.isEmpty ? 'Set' : 'Clear',
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () async {
+                    if (settings.exportDirectory.isNotEmpty) {
+                      await settings.setExportDirectory('');
+                      if (context.mounted) {
+                        _snack(context, 'Export directory reset to default');
+                      }
+                      return;
+                    }
+                    final controller = TextEditingController();
+                    final path = await showDialog<String>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: PulseTokens.surfaceElevated,
+                        title: const Text('Export directory'),
+                        content: TextField(
+                          controller: controller,
+                          decoration: const InputDecoration(
+                            hintText: r'C:\path\to\exports',
+                          ),
+                          autofocus: true,
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.pop(ctx, controller.text.trim()),
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (path != null && path.isNotEmpty) {
+                      await settings.setExportDirectory(path);
+                      if (context.mounted) {
+                        _snack(context, 'Export directory set');
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.slidersHorizontal,
+                title: 'Reset all settings',
+                subtitle: 'Restore defaults and clear preferences',
+                trailing: PulseButton(
+                  label: 'Reset',
+                  icon: LucideIcons.rotateCcw,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () => _confirm(
+                    context,
+                    title: 'Reset all settings?',
+                    body:
+                        'Timeline preferences and interface options return to '
+                        'defaults. A saved LM Studio API key is removed.',
+                    onConfirm: () async {
+                      final tokenStore = _assistantTokenStore(context);
+                      await settings.resetAll();
+                      tokenStore?.delete();
+                      await timeline.applyLiveMonitoringPreference();
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+    };
+  }
+}
+
+class _CategoryRail extends StatelessWidget {
+  const _CategoryRail({
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final SettingsCategoryId selected;
+  final ValueChanged<SettingsCategoryId> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    return PulseCard(
+      elevated: true,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: ListView(
+        children: [
+          for (final category in SettingsCategoryId.values)
+            _CategoryTile(
+              category: category,
+              selected: category == selected,
+              onTap: () => onSelect(category),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryTile extends StatefulWidget {
+  const _CategoryTile({
+    required this.category,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final SettingsCategoryId category;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  State<_CategoryTile> createState() => _CategoryTileState();
+}
+
+class _CategoryTileState extends State<_CategoryTile> {
+  bool _hover = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = widget.selected;
+    final bg = selected
+        ? PulseTokens.accentSoft
+        : _hover
+            ? PulseTokens.surfaceHover
+            : Colors.transparent;
+    final fg = selected ? PulseTokens.accent : PulseTokens.textSecondary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      child: Material(
+        color: bg,
+        borderRadius: BorderRadius.circular(PulseTokens.radiusMd),
+        child: InkWell(
+          onTap: widget.onTap,
+          onHover: (v) => setState(() => _hover = v),
+          borderRadius: BorderRadius.circular(PulseTokens.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              children: [
+                Icon(widget.category.icon, size: 16, color: fg),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.category.label,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 13,
+                          fontWeight:
+                              selected ? FontWeight.w600 : FontWeight.w500,
+                          color: selected
+                              ? PulseTokens.textPrimary
+                              : PulseTokens.textSecondary,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AccentChip extends StatelessWidget {
+  const _AccentChip({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(PulseTokens.radiusPill),
+      child: AnimatedContainer(
+        duration: PulseTokens.motionFast,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? PulseTokens.accentSoft : PulseTokens.surfaceHover,
+          borderRadius: BorderRadius.circular(PulseTokens.radiusPill),
+          border: Border.all(
+            color: selected ? PulseTokens.accent : PulseTokens.stroke,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 14,
+              height: 14,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: PulseTokens.strokeStrong),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label[0].toUpperCase() + label.substring(1),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// GitHub edition: check for a newer release and open its page.
+class _UpdatesGroup extends StatelessWidget {
+  const _UpdatesGroup();
+
+  String _statusText(UpdateCheckController updates) {
+    final checked = updates.lastCheckedAt;
+    final when = checked == null
+        ? ''
+        : ' Last checked ${checked.toLocal().toString().substring(0, 16)}.';
+    return switch (updates.status) {
+      UpdateCheckStatus.idle =>
+        'Ask GitHub whether a newer Pulse is out. Nothing is downloaded or '
+            'installed, and nothing about this PC is sent.$when',
+      UpdateCheckStatus.checking => 'Checking GitHub…',
+      UpdateCheckStatus.upToDate =>
+        'You have the latest version ($kAppVersion).$when',
+      UpdateCheckStatus.available =>
+        'Pulse ${updates.latest!.version} is available (you have '
+            '$kAppVersion).',
+      UpdateCheckStatus.failed => updates.error ?? 'The check failed.',
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final updates = context.watch<UpdateCheckController>();
+    final settings = context.watch<SettingsController>();
+    final latest = updates.latest;
+    return _SettingsGroup(
+      title: 'Updates',
+      children: [
+        _SettingsRow(
+          icon: updates.status == UpdateCheckStatus.available
+              ? LucideIcons.circleArrowUp
+              : LucideIcons.refreshCw,
+          title: updates.status == UpdateCheckStatus.available
+              ? 'Update available'
+              : 'Check for updates',
+          subtitle: _statusText(updates),
+          trailing: updates.status == UpdateCheckStatus.available &&
+                  latest != null
+              ? PulseButton(
+                  label: 'Release notes',
+                  icon: LucideIcons.externalLink,
+                  onPressed: () {
+                    if (!openPulseGitHubPage(latest.pageUrl)) {
+                      PulseSnack.error(
+                        context,
+                        'Could not open the browser. The release is at '
+                        '${latest.pageUrl}',
+                      );
+                    }
+                  },
+                )
+              : PulseButton(
+                  label: 'Check',
+                  variant: PulseButtonVariant.secondary,
+                  loading: updates.status == UpdateCheckStatus.checking,
+                  onPressed: updates.check,
+                ),
+        ),
+        const SoftDivider(indent: 52),
+        _SettingsRow(
+          icon: LucideIcons.calendarClock,
+          title: 'Check automatically',
+          subtitle: 'Once a week, when Pulse starts. Off by default.',
+          trailing: Switch(
+            value: settings.checkUpdatesAutomatically,
+            onChanged: (value) async {
+              await settings.setCheckUpdatesAutomatically(value);
+              if (value) await updates.checkAutomaticallyIfDue();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The Assistant's token store, or null in widget tests without one.
+LocalAiTokenStore? _assistantTokenStore(BuildContext context) {
+  try {
+    return context.read<AssistantController>().tokenStore;
+  } on ProviderNotFoundException {
+    return null;
+  }
+}
+
+/// Ports and the optional LM Studio API key for the local Assistant.
+///
+/// The address is fixed to 127.0.0.1: diagnostic data never leaves this PC,
+/// so there is deliberately no field for another host.
+class _AssistantConnectionGroup extends StatefulWidget {
+  const _AssistantConnectionGroup();
+
+  @override
+  State<_AssistantConnectionGroup> createState() =>
+      _AssistantConnectionGroupState();
+}
+
+class _AssistantConnectionGroupState extends State<_AssistantConnectionGroup> {
+  late final TextEditingController _ollamaPort;
+  late final TextEditingController _lmStudioPort;
+  bool _hasToken = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<SettingsController>();
+    _ollamaPort =
+        TextEditingController(text: '${settings.assistantOllamaPort}');
+    _lmStudioPort =
+        TextEditingController(text: '${settings.assistantLmStudioPort}');
+    _hasToken = _assistantTokenStore(context)?.read() != null;
+  }
+
+  @override
+  void dispose() {
+    _ollamaPort.dispose();
+    _lmStudioPort.dispose();
+    super.dispose();
+  }
+
+  void _refreshAssistant() {
+    try {
+      context.read<AssistantController>().unawaitedRefresh();
+    } on ProviderNotFoundException {
+      // Isolated widget tests may omit the Assistant.
+    }
+  }
+
+  Future<void> _savePort(
+    TextEditingController controller,
+    Future<bool> Function(int port) save,
+    int current,
+  ) async {
+    final port = int.tryParse(controller.text.trim());
+    final saved = port != null && await save(port);
+    if (!mounted) return;
+    if (!saved) {
+      controller.text = '$current';
+      PulseSnack.error(
+        context,
+        'Enter a port from ${LocalAiLoopback.minPort} to '
+        '${LocalAiLoopback.maxPort}.',
+      );
+      return;
+    }
+    PulseSnack.success(context, 'Port saved');
+    _refreshAssistant();
+  }
+
+  Future<void> _addToken() async {
+    final store = _assistantTokenStore(context);
+    if (store == null) return;
+    final controller = TextEditingController();
+    final token = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: PulseTokens.surfaceElevated,
+        title: const Text('LM Studio API key'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          enableSuggestions: false,
+          autocorrect: false,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Paste the key from LM Studio → Developer',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (token == null || token.isEmpty || !mounted) return;
+    if (!store.write(token)) {
+      PulseSnack.error(
+        context,
+        'Windows could not save the key. Details are in the Pulse log.',
+      );
+      return;
+    }
+    setState(() => _hasToken = true);
+    PulseSnack.success(context, 'API key saved');
+    _refreshAssistant();
+  }
+
+  void _removeToken() {
+    final store = _assistantTokenStore(context);
+    if (store == null) return;
+    if (!store.delete()) {
+      PulseSnack.error(
+        context,
+        'Windows could not remove the key. Details are in the Pulse log.',
+      );
+      return;
+    }
+    setState(() => _hasToken = false);
+    PulseSnack.success(context, 'API key removed');
+    _refreshAssistant();
+  }
+
+  Widget _portField(
+    TextEditingController controller,
+    Future<bool> Function(int port) save,
+    int current,
+  ) {
+    return SizedBox(
+      width: 160,
+      child: TextField(
+        controller: controller,
+        decoration: const InputDecoration(
+          prefixText: '127.0.0.1 : ',
+          isDense: true,
+        ),
+        keyboardType: TextInputType.number,
+        inputFormatters: [
+          FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(5),
+        ],
+        onSubmitted: (_) => _savePort(controller, save, current),
+        onTapOutside: (_) {
+          if (controller.text.trim() != '$current') {
+            unawaited(_savePort(controller, save, current));
+          }
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<SettingsController>();
+    return _SettingsGroup(
+      title: 'Assistant',
+      children: [
+        _SettingsRow(
+          icon: LucideIcons.lock,
+          title: 'This PC only',
+          subtitle: 'The Assistant talks only to a local AI on 127.0.0.1. '
+              'Other computers and cloud services are not supported.',
+          trailing: Icon(
+            LucideIcons.check,
+            size: 18,
+            color: PulseTokens.success,
+          ),
+        ),
+        const SoftDivider(indent: 52),
+        _SettingsRow(
+          icon: LucideIcons.bot,
+          title: 'Ollama port',
+          subtitle: 'Default ${LocalAiLoopback.ollamaDefaultPort}',
+          trailing: _portField(
+            _ollamaPort,
+            settings.setAssistantOllamaPort,
+            settings.assistantOllamaPort,
+          ),
+        ),
+        const SoftDivider(indent: 52),
+        _SettingsRow(
+          icon: LucideIcons.bot,
+          title: 'LM Studio port',
+          subtitle: 'Default ${LocalAiLoopback.lmStudioDefaultPort}',
+          trailing: _portField(
+            _lmStudioPort,
+            settings.setAssistantLmStudioPort,
+            settings.assistantLmStudioPort,
+          ),
+        ),
+        const SoftDivider(indent: 52),
+        _SettingsRow(
+          icon: LucideIcons.keyRound,
+          title: 'LM Studio API key',
+          subtitle: _hasToken
+              ? 'Saved in Windows Credential Manager. Never written to '
+                  'settings, logs or exports.'
+              : 'Only needed when "Require API key" is on in LM Studio. '
+                  'Kept in Windows Credential Manager.',
+          trailing: _hasToken
+              ? PulseButton(
+                  label: 'Remove',
+                  icon: LucideIcons.trash2,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: _removeToken,
+                )
+              : PulseButton(
+                  label: 'Add key',
+                  icon: LucideIcons.plus,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: _addToken,
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Event types hidden from the Timeline, each with a way back (issue #25).
+class _HiddenEventTypesGroup extends StatelessWidget {
+  const _HiddenEventTypesGroup();
+
+  @override
+  Widget build(BuildContext context) {
+    final library = context.watch<TimelineLibraryController>();
+    final hidden = library.hiddenEventTypes;
+    return _SettingsGroup(
+      title: 'Hidden events',
+      children: [
+        if (hidden.isEmpty)
+          const _SettingsRow(
+            icon: LucideIcons.eyeOff,
+            title: 'No hidden events',
+            subtitle: 'To hide events you expect, open one in the Timeline '
+                'and choose “Hide events like this”. They stay in reports '
+                'and exports.',
+          ),
+        for (final (index, type) in hidden.indexed) ...[
+          if (index > 0) const SoftDivider(indent: 52),
+          _SettingsRow(
+            icon: LucideIcons.eyeOff,
+            title: type.title.isNotEmpty
+                ? type.title
+                : '${type.provider} ${type.eventId}',
+            subtitle: '${type.provider} · Event ID ${type.eventId}',
+            trailing: PulseButton(
+              label: 'Show again',
+              icon: LucideIcons.eye,
+              variant: PulseButtonVariant.secondary,
+              onPressed: () => library.showEventType(type.key),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _SettingsGroup extends StatelessWidget {
+  const _SettingsGroup({required this.title, required this.children});
+
+  final String title;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: Text(
+            title.toUpperCase(),
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  letterSpacing: 0.7,
+                  fontSize: 11,
+                  color: PulseTokens.textTertiary,
+                ),
+          ),
+        ),
+        PulseCard(
+          elevated: true,
+          padding: EdgeInsets.zero,
+          child: Column(children: children),
+        ),
+      ],
+    );
+  }
+}
+
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.trailing,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final stackTrailing =
+              trailing != null && constraints.maxWidth < 440;
+          final label = Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontSize: 12.5,
+                        height: 1.35,
+                      ),
+                ),
+              ],
+            ),
+          );
+          final iconWell = Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: PulseTokens.surfaceHover,
+              borderRadius: BorderRadius.circular(PulseTokens.radiusIconWell),
+            ),
+            child: Icon(icon, size: 18, color: PulseTokens.textSecondary),
+          );
+
+          if (stackTrailing) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    iconWell,
+                    const SizedBox(width: 14),
+                    label,
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: trailing!,
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              iconWell,
+              const SizedBox(width: 14),
+              label,
+              if (trailing != null) ...[
+                const SizedBox(width: 12),
+                trailing!,
+              ],
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PrefSlider extends StatefulWidget {
+  const _PrefSlider({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.onCommit,
+  });
+
+  final int value;
+  final int min;
+  final int max;
+  final int divisions;
+  final ValueChanged<int> onCommit;
+
+  @override
+  State<_PrefSlider> createState() => _PrefSliderState();
+}
+
+class _PrefSliderState extends State<_PrefSlider> {
+  late double _local;
+
+  @override
+  void initState() {
+    super.initState();
+    _local = widget.value.toDouble();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PrefSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _local = widget.value.toDouble();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 168,
+      child: Slider(
+        value: _local.clamp(widget.min.toDouble(), widget.max.toDouble()),
+        min: widget.min.toDouble(),
+        max: widget.max.toDouble(),
+        divisions: widget.divisions,
+        label: '${_local.round()}',
+        onChanged: (v) => setState(() => _local = v),
+        onChangeEnd: (v) => widget.onCommit(v.round()),
+      ),
+    );
+  }
+}
+
+class _PrefDoubleSlider extends StatefulWidget {
+  const _PrefDoubleSlider({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.divisions,
+    required this.onCommit,
+    required this.labelBuilder,
+  });
+
+  final double value;
+  final double min;
+  final double max;
+  final int divisions;
+  final ValueChanged<double> onCommit;
+  final String Function(double) labelBuilder;
+
+  @override
+  State<_PrefDoubleSlider> createState() => _PrefDoubleSliderState();
+}
+
+class _PrefDoubleSliderState extends State<_PrefDoubleSlider> {
+  late double _local;
+
+  @override
+  void initState() {
+    super.initState();
+    _local = widget.value;
+  }
+
+  @override
+  void didUpdateWidget(covariant _PrefDoubleSlider oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      _local = widget.value;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 168,
+      child: Slider(
+        value: _local.clamp(widget.min, widget.max),
+        min: widget.min,
+        max: widget.max,
+        divisions: widget.divisions,
+        label: widget.labelBuilder(_local),
+        onChanged: (v) => setState(() => _local = v),
+        onChangeEnd: (v) => widget.onCommit(v),
+      ),
+    );
+  }
+}

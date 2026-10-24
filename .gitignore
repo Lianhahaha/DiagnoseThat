@@ -1,0 +1,69 @@
+# Dart / Flutter
+.dart_tool/
+**/.dart_tool/
+.packages
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/doc/api/
+
+# Build outputs
+build/
+**/build/
+dist/
+**/dist/
+build-ninja/
+**/generated/
+!shared/pulse_protocol/proto/
+
+# Flutter Windows runner binaries
+**/windows/**/runner/Debug/
+**/windows/**/runner/Release/
+**/windows/**/x64/runner/Debug/
+**/windows/**/x64/runner/Release/
+apps/pulse_app/windows/flutter/ephemeral/
+
+# Compiled / packaged artifacts
+artifacts/
+tools/soak-results/*
+!tools/soak-results/README.md
+tools/validation-results/*
+!tools/validation-results/README.md
+*.exe
+*.dll
+*.pdb
+*.obj
+*.lib
+*.exp
+*.ilk
+*.zip
+*.log
+*.appx
+*.msix
+*.msi
+
+# CMake / Ninja
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+.ninja_deps
+.ninja_log
+
+# IDE / OS
+.vs/
+.idea/
+.vscode/
+*.user
+.DS_Store
+Thumbs.db
+
+# Local machine data
+ProgramData/
+
+# Packaging caches (official Node zip for private PulseMCP runtime)
+tools/cache/
+
+# Store justification export intermediates (PDF/DOCX outputs are kept)
+docs/store/_export_build/
+

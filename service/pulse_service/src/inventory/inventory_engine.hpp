@@ -1,0 +1,81 @@
+#pragma once
+
+#include "pulse_wire.hpp"
+
+#include <cstdint>
+#include <mutex>
+#include <string>
+
+namespace pulse::inventory {
+
+/// Uniform cache contract (ADR-011 D3) — identical semantics for every domain.
+struct DomainCacheMeta {
+  std::uint64_t generation = 0;
+  std::int64_t generated_at_unix_ms = 0;
+  std::uint32_t cache_ttl_ms = 0;
+};
+
+struct CollectRequest {
+  ipc::InventoryDomainId domain = ipc::InventoryDomainId::Unspecified;
+  bool force_refresh = false;
+  std::uint64_t since_generation = 0;
+  std::uint32_t limit = 0;
+};
+
+/// Owns per-domain snapshots. Lazy; never runs on service start.
+class InventoryEngine {
+ public:
+  InventoryEngine() = default;
+
+  ipc::InventoryDomainSnapshot GetDomain(const CollectRequest& request);
+
+ private:
+  struct CachedDomain {
+    DomainCacheMeta meta;
+    ipc::InventoryDomainSnapshot snapshot;
+  };
+
+  ipc::InventoryDomainSnapshot CollectFresh(const CollectRequest& request);
+  ipc::InventoryDomainSnapshot CollectServices(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectDrivers(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectSoftware(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectUsb(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectPci(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectDisplays(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectAudio(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectBluetooth(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectPrinters(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectBattery(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectMotherboard();
+  ipc::InventoryDomainSnapshot CollectBios();
+  ipc::InventoryDomainSnapshot CollectCpu();
+  ipc::InventoryDomainSnapshot CollectMemoryModules(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectStorage(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot CollectNetworkAdapters(std::uint32_t limit);
+  ipc::InventoryDomainSnapshot MakeUnsupported(
+      ipc::InventoryDomainId domain, std::uint32_t ttl_ms) const;
+  ipc::InventoryDomainSnapshot ServeCachedOrCollect(
+      CachedDomain* cache, const CollectRequest& request);
+  CachedDomain* CacheFor(ipc::InventoryDomainId domain);
+
+  std::mutex mutex_;
+  CachedDomain services_;
+  CachedDomain drivers_;
+  CachedDomain software_;
+  CachedDomain usb_;
+  CachedDomain pci_;
+  CachedDomain displays_;
+  CachedDomain audio_;
+  CachedDomain bluetooth_;
+  CachedDomain printers_;
+  CachedDomain battery_;
+  CachedDomain motherboard_;
+  CachedDomain bios_;
+  CachedDomain cpu_;
+  CachedDomain memory_modules_;
+  CachedDomain storage_;
+  CachedDomain network_adapters_;
+  std::uint64_t next_generation_ = 1;
+};
+
+}  // namespace pulse::inventory

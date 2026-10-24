@@ -1,0 +1,105 @@
+name: Release
+
+# Builds the GitHub edition (Setup.exe + payload zip) in a clean runner, so a
+# release never depends on one developer's machine.
+#
+# - Run it by hand (Actions > Release > Run workflow) to get the packages as
+#   a workflow artifact for testing.
+# - Push a tag like v1.4.0 to also create a DRAFT GitHub release with the
+#   packages attached. Nothing is published until a maintainer reviews the
+#   draft and clicks Publish.
+#
+# Code signing (SignPath Foundation) is not wired in yet: the application is
+# in review. See docs/architecture/25-beta-release.md, "Signing releases".
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.44.8
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            choco install innosetup --yes --no-progress
+            if ($LASTEXITCODE -ne 0) { throw "Inno Setup install failed" }
+          }
+
+      - name: Check version stamps
+        id: version
+        shell: pwsh
+        run: |
+          $script = Get-Content tools/scripts/package_beta.ps1 -Raw
+          $iss = Get-Content tools/installer/Pulse.iss -Raw
+          $pkg = [regex]::Match($script, '\$Version = "([^"]+)"').Groups[1].Value
+          $setup = [regex]::Match($iss, '#define MyAppVersion "([^"]+)"').Groups[1].Value
+          if (-not $pkg -or $pkg -ne $setup) {
+            throw "package_beta.ps1 ($pkg) and Pulse.iss ($setup) disagree on the version"
+          }
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $tag = "${{ github.ref_name }}".TrimStart('v')
+            if ($tag -ne $pkg) { throw "Tag v$tag does not match version $pkg" }
+          }
+          "version=$pkg" >> $env:GITHUB_OUTPUT
+
+      - name: Build packages
+        shell: pwsh
+        run: powershell -ExecutionPolicy Bypass -File .\tools\scripts\package_beta.ps1
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem dist -File | Where-Object {
+            $_.Name -like "Pulse-Setup-${{ steps.version.outputs.version }}-*.exe" -or
+            $_.Name -like "Pulse-${{ steps.version.outputs.version }}-windows-x64.zip"
+          }
+          if ($files.Count -ne 2) { throw "Expected Setup.exe and zip, found $($files.Count)" }
+          $files | Get-FileHash -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLowerInvariant())  $(Split-Path $_.Path -Leaf)" } |
+            Set-Content dist/SHA256SUMS.txt -Encoding ascii
+          Get-Content dist/SHA256SUMS.txt
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: pulse-${{ steps.version.outputs.version }}-windows
+          path: |
+            dist/Pulse-Setup-${{ steps.version.outputs.version }}-windows-x64.exe
+            dist/Pulse-${{ steps.version.outputs.version }}-windows-x64.zip
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+
+      - name: Create draft release
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = "${{ steps.version.outputs.version }}"
+          $notes = "docs/releases/v$v.md"
+          $assets = @(
+            "dist/Pulse-Setup-$v-windows-x64.exe",
+            "dist/Pulse-$v-windows-x64.zip",
+            "dist/SHA256SUMS.txt"
+          )
+          if (Test-Path $notes) {
+            gh release create "v$v" @assets --draft --title "Pulse v$v" --notes-file $notes
+          } else {
+            gh release create "v$v" @assets --draft --title "Pulse v$v" --generate-notes
+          }
+          if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }

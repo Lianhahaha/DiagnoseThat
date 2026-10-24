@@ -1,0 +1,978 @@
+syntax = "proto3";
+
+package pulse.ipc;
+
+// Pulse IPC protocol schema.
+// Protocol version: 1
+// TASK-002.2: historical Timeline snapshot (System channel).
+// TASK-003: humanized title / recommendation on TimelineEvent.
+// TASK-005: Event Intelligence (importance, action_required, category).
+// TASK-006: Live Monitoring (EvtSubscribe push).
+// R2: additive TimelineEvent Wevtapi system fields + lazy GetTimelineEventDetail.
+// R3: additive Inventory Engine GetInventoryDomain / InventoryDomainSnapshot (ADR-011).
+option csharp_namespace = "Pulse.Ipc";
+
+message ClientHello {
+  uint32 protocol_version = 1;
+  string client_name = 2;
+  string client_version = 3;
+}
+
+message ServerHello {
+  uint32 protocol_version = 1;
+  string service_version = 2;
+}
+
+message Ping {
+  uint64 nonce = 1;
+  int64 unix_ms = 2;
+}
+
+message Pong {
+  uint64 nonce = 1;
+  int64 unix_ms = 2;
+  string service_version = 3;
+}
+
+message Heartbeat {
+  int64 unix_ms = 1;
+}
+
+message ErrorResponse {
+  int32 code = 1;
+  string message = 2;
+  string technical_detail = 3;
+  string component = 4;
+}
+
+// --- Timeline / Event Log (TASK-002.2) ---
+
+enum Severity {
+  SEVERITY_UNKNOWN = 0;
+  SEVERITY_INFO = 1;
+  SEVERITY_WARNING = 2;
+  SEVERITY_ERROR = 3;
+  SEVERITY_CRITICAL = 4;
+  SEVERITY_VERBOSE = 5;
+}
+
+enum Importance {
+  IMPORTANCE_LOW = 0;
+  IMPORTANCE_MEDIUM = 1;
+  IMPORTANCE_HIGH = 2;
+  IMPORTANCE_CRITICAL = 3;
+}
+
+// Wire form of a collected Event Log record for Timeline rows.
+message TimelineEvent {
+  string event_id = 1;           // stable id for UI keys / future dedup
+  int64 timestamp_unix_ms = 2;   // UTC epoch ms (0 if unknown)
+  string timestamp_iso = 3;      // ISO-8601 UTC when available
+  Severity severity = 4;
+  string channel = 5;
+  string provider_name = 6;
+  uint32 win_event_id = 7;
+  uint64 record_id = 8;
+  string computer_name = 9;
+  string summary = 10;             // Level 1 human summary (Event Intelligence)
+  string technical_summary = 11;   // Level 2
+  string message = 12;             // raw formatted Event Viewer message
+  string title = 13;               // Level 1 short title (Event Intelligence)
+  string recommendation = 14;      // optional; empty when not useful
+  bool action_required = 15;
+  Importance importance = 16;
+  string category = 17;
+
+  // R2 — Wevtapi system properties (unset / empty when unavailable; never invented).
+  uint32 task = 18;
+  bool has_task = 19;
+  uint32 opcode = 20;
+  bool has_opcode = 21;
+  uint64 keywords = 22;
+  bool has_keywords = 23;
+  uint32 process_id = 24;
+  bool has_process_id = 25;
+  string process_name = 26;       // best-effort image name when PID resolvable
+  uint32 thread_id = 27;
+  bool has_thread_id = 28;
+  string user_sid = 29;
+  string activity_id = 30;          // GUID string when present
+  string related_activity_id = 31;  // correlation / related activity GUID
+  string level_name = 32;           // Windows level name when known
+  string raw_xml = 33;              // Level 3; empty on list rows; set on detail fetch
+}
+
+// Client → Service: lazy Level 3 / full re-render by channel + record id.
+message GetTimelineEventDetail {
+  string channel = 1;
+  uint64 record_id = 2;
+}
+
+// Service → Client: detail response (found=false when record missing).
+message TimelineEventDetail {
+  bool found = 1;
+  TimelineEvent event = 2;
+}
+
+// Client → Service: request a one-shot historical batch.
+message GetTimelineSnapshot {
+  uint32 limit = 1;     // default 100
+  string channel = 2;   // default "System" (TASK-002.2: System only)
+}
+
+// Service → Client: historical batch (newest first).
+message TimelineSnapshot {
+  repeated TimelineEvent events = 1;
+  string channel = 2;
+  uint32 requested_limit = 3;
+  int64 collected_unix_ms = 4;
+}
+
+// Client → Service: begin receiving live TimelineEvent pushes.
+message StartLiveMonitoring {
+  string channel = 1; // default "System"
+}
+
+// Client → Service: stop live pushes for this connection.
+message StopLiveMonitoring {}
+
+// --- System Health metrics (TASK-007) ---
+// Unsupported sensors/metrics: has_* = false; Flutter shows "—".
+
+message HealthStaticInfo {
+  string windows_edition = 1;
+  string windows_version = 2;
+  string cpu_model = 3;
+  string gpu_model = 4;
+  uint64 installed_ram_bytes = 5;
+  uint64 primary_storage_bytes = 6;
+  string active_network_adapter = 7;
+  // TASK-007.2 detail fields
+  uint32 cpu_base_mhz = 8;
+  uint32 cpu_sockets = 9;
+  uint32 cpu_cores = 10;
+  uint32 cpu_logical_processors = 11;
+  bool cpu_virtualization_enabled = 12;
+  uint64 gpu_dedicated_bytes = 13;
+  uint64 gpu_shared_bytes = 14;
+  // CPU topology / identity (GetLogicalProcessorInformationEx + CPUID)
+  string cpu_architecture = 15;          // x64 / x86 / ARM64
+  string cpu_instruction_set = 16;       // e.g. SSE4.2 AVX2
+  uint32 cpu_numa_nodes = 17;
+  bool has_cpu_smt = 18;
+  bool cpu_smt_enabled = 19;
+  bool has_cpu_l1_cache = 20;
+  uint64 cpu_l1_cache_bytes = 21;
+  bool has_cpu_l2_cache = 22;
+  uint64 cpu_l2_cache_bytes = 23;
+  bool has_cpu_l3_cache = 24;
+  uint64 cpu_l3_cache_bytes = 25;
+  string cpu_virtualization_vendor = 26; // Hyper-V / VMware / …
+  // GPU identity (DXGI + SetupAPI + D3DKMT + registry)
+  string gpu_vendor = 27;
+  string gpu_driver_version = 28;
+  string gpu_driver_date = 29;
+  bool has_gpu_luid = 30;
+  int32 gpu_luid_high = 31;
+  uint32 gpu_luid_low = 32;
+  string gpu_directx_version = 33;       // feature level e.g. 12_2
+  string gpu_wddm_version = 34;
+  bool has_gpu_hardware_scheduling = 35;
+  bool gpu_hardware_scheduling = 36;
+  string gpu_pcie_link_speed = 37;       // Gen3 / Gen4 …
+  string gpu_pcie_link_width = 38;       // x8 / x16 …
+  // Network adapter identity (IP Helper + SetupAPI + WLAN)
+  string net_manufacturer = 39;
+  string net_description = 40;
+  string net_mac_address = 41;
+  string net_driver_version = 42;
+  string net_driver_date = 43;
+  string net_connection_type = 44;       // Ethernet / Wi-Fi / …
+  string net_duplex = 45;
+  bool has_net_mtu = 46;
+  uint32 net_mtu = 47;
+  bool has_net_if_index = 48;
+  uint32 net_if_index = 49;
+  bool has_net_link_speed_bps = 50;
+  uint64 net_link_speed_bps = 51;
+  bool has_net_dhcp = 52;
+  bool net_dhcp_enabled = 53;
+  string net_dhcp_server = 54;
+  bool has_net_lease_obtained = 55;
+  int64 net_lease_obtained_unix_ms = 56;
+  bool has_net_lease_expires = 57;
+  int64 net_lease_expires_unix_ms = 58;
+  // Memory modules (SMBIOS Type 17) — unset when unavailable
+  bool has_mem_slots_used = 59;
+  uint32 mem_slots_used = 60;
+  bool has_mem_module_count = 61;
+  uint32 mem_module_count = 62;
+  string mem_ddr_generation = 63;
+  bool has_mem_speed_mhz = 64;
+  uint32 mem_speed_mhz = 65;
+  string mem_form_factor = 66;
+  bool has_mem_ecc = 67;
+  bool mem_ecc = 68;
+  bool has_mem_channels = 69;
+  uint32 mem_channels = 70;
+  string mem_dimm_vendor = 71;
+  string mem_dimm_part_number = 72;
+  string mem_dimm_serial = 73;
+  // Primary disk identity (Storage IOCTL) — unset when unavailable
+  string disk_interface = 74;
+  string disk_bus = 75;
+  string disk_model = 76;
+  string disk_serial = 77;
+  string disk_firmware = 78;
+  string disk_partition_style = 79;
+  bool has_disk_sector_size = 80;
+  uint32 disk_sector_size = 81;
+  bool has_disk_rotation_rate = 82;
+  uint32 disk_rotation_rate = 83;        // 0 = SSD / non-rotating when known
+  bool has_disk_trim = 84;
+  bool disk_trim_supported = 85;
+  // GPU PCI location (D3DKMT ADAPTERADDRESS) — e.g. "PCI 1:0:0"
+  string gpu_pci_location = 86;
+  // Resizable BAR — only set when a documented detection path succeeds.
+  bool has_gpu_resizable_bar = 87;
+  bool gpu_resizable_bar = 88;
+}
+
+// Top process row for health detail panels (TASK-007.2).
+// CPU / memory / threads / handles come from NtQuerySystemInformation
+// (SystemProcessInformation) — same family of data Task Manager uses.
+message HealthProcessEntry {
+  uint32 pid = 1;
+  string name = 2;
+  bool has_cpu_percent = 3;
+  double cpu_percent = 4;
+  bool has_memory_bytes = 5;
+  uint64 memory_bytes = 6;
+  bool has_gpu_percent = 7;
+  double gpu_percent = 8;
+  bool has_disk_bps = 9;
+  double disk_bps = 10; // bytes/sec
+  bool has_net_bps = 11;
+  double net_bps = 12; // bytes/sec
+  string path = 13; // full image path for icons (optional)
+  uint32 thread_count = 14;
+  uint32 handle_count = 15;
+  bool has_create_time = 16;
+  uint64 create_time_unix_ms = 17;
+  bool has_is_critical = 18;
+  bool is_critical = 19;
+  // Memory panel enrichment (SPI) — private WS remains memory_bytes.
+  bool has_working_set_bytes = 20;
+  uint64 working_set_bytes = 21;       // total WorkingSetSize
+  bool has_commit_bytes = 22;
+  uint64 commit_bytes = 23;            // PagefileUsage (Commit Size)
+  bool has_paged_pool_bytes = 24;
+  uint64 paged_pool_bytes = 25;        // QuotaPagedPoolUsage
+  bool has_nonpaged_pool_bytes = 26;
+  uint64 nonpaged_pool_bytes = 27;     // QuotaNonPagedPoolUsage
+  // GPU process enrichment (PDH GPU Engine + GPU Process Memory)
+  bool has_gpu_dedicated_bytes = 28;
+  uint64 gpu_dedicated_bytes = 29;
+  bool has_gpu_shared_bytes = 30;
+  uint64 gpu_shared_bytes = 31;
+  string gpu_engine = 32;              // engtype label e.g. 3D, Compute
+  // Per-process network (ETW Kernel-Network) — upload=send, download=recv.
+  bool has_net_upload_bps = 33;
+  double net_upload_bps = 34;          // bytes/sec sent
+  bool has_net_download_bps = 35;
+  double net_download_bps = 36;        // bytes/sec received
+  bool has_net_bytes_total = 37;
+  uint64 net_bytes_total = 38;         // cumulative send+recv since session start
+}
+
+// Full / delta process inventory for Task Manager–style CPU panel.
+message HealthProcessInventoryUpdate {
+  uint64 seq = 1;
+  bool full_resync = 2;
+  repeated HealthProcessEntry upserts = 3;
+  repeated uint32 removed_pids = 4;
+}
+
+message GetProcessDetails {
+  uint32 pid = 1;
+}
+
+message ProcessDetails {
+  uint32 pid = 1;
+  string name = 2;
+  string path = 3;
+  string company = 4; // publisher / CompanyName from version resources
+  string command_line = 5;
+  bool has_create_time = 6;
+  uint64 create_time_unix_ms = 7;
+  uint32 thread_count = 8;
+  uint32 handle_count = 9;
+  bool has_path = 10;
+  bool has_company = 11;
+  bool has_command_line = 12;
+  uint32 parent_pid = 13;
+  bool has_parent_pid = 14;
+  string parent_name = 15;
+  bool has_parent_name = 16;
+  string user = 17;
+  bool has_user = 18;
+  string integrity_level = 19;
+  bool has_integrity_level = 20;
+  bool elevated = 21;
+  bool has_elevated = 22;
+  string architecture = 23; // x64 / x86 / ARM64
+  bool has_architecture = 24;
+  string product_name = 25; // FileDescription / ProductName
+  bool has_product_name = 26;
+  uint64 cpu_time_ms = 27; // user + kernel CPU time since start (GetProcessTimes)
+  bool has_cpu_time = 28;
+}
+
+// Drive classification for volume inventory (issue #11).
+enum HealthDriveKind {
+  HEALTH_DRIVE_KIND_UNSPECIFIED = 0;
+  HEALTH_DRIVE_KIND_FIXED = 1;
+  HEALTH_DRIVE_KIND_REMOVABLE = 2;
+  HEALTH_DRIVE_KIND_REMOTE = 3;
+  HEALTH_DRIVE_KIND_CDROM = 4;
+  HEALTH_DRIVE_KIND_RAMDISK = 5;
+  HEALTH_DRIVE_KIND_UNKNOWN = 6;
+}
+
+// One mounted volume (letter / mount root).
+message HealthVolume {
+  string id = 1;              // e.g. "C:"
+  string mount_point = 2;     // e.g. "C:\\"
+  string label = 3;           // volume label when available
+  string file_system = 4;     // NTFS, FAT32, …
+  HealthDriveKind kind = 5;
+  uint64 used_bytes = 6;
+  uint64 total_bytes = 7;
+  bool has_capacity = 8;      // false when unavailable / not queried
+  bool included_in_summary = 9; // fixed volumes contribute to primary summary
+}
+
+// One PhysicalDisk PDH instance (excludes _Total).
+message HealthPhysicalDisk {
+  string id = 1;              // PDH instance name, e.g. "0 C:"
+  string name = 2;            // display name (same as id unless refined)
+  bool has_read_bps = 3;
+  double read_bps = 4;
+  bool has_write_bps = 5;
+  double write_bps = 6;
+}
+
+// Health of one physical disk from Storage IOCTLs (issue #12 / #20).
+// has_* false = the drive or driver does not report it.
+message HealthDiskHealth {
+  uint32 index = 1; // PhysicalDriveN number
+  string model = 2; // vendor + product id
+  string bus = 3; // "NVMe", "SATA", "USB", ...
+  bool has_temp_c = 4;
+  double temp_c = 5;
+  bool has_failure_predicted = 6;
+  bool failure_predicted = 7; // SMART predicts failure / NVMe critical warning set
+  bool has_critical_warning = 8;
+  uint32 critical_warning = 9; // NVMe CriticalWarning bits
+  bool has_percentage_used = 10;
+  uint32 percentage_used = 11; // NVMe wear estimate; can exceed 100
+  bool has_available_spare = 12;
+  uint32 available_spare = 13; // percent
+  uint32 available_spare_threshold = 14; // percent
+  bool has_power_on_hours = 15;
+  uint64 power_on_hours = 16;
+  bool has_unsafe_shutdowns = 17;
+  uint64 unsafe_shutdowns = 18;
+  bool has_media_errors = 19;
+  uint64 media_errors = 20;
+  bool has_bytes_read = 21;
+  uint64 bytes_read = 22;
+  bool has_bytes_written = 23;
+  uint64 bytes_written = 24;
+}
+
+// One GPU adapter (issue #9). Software adapters (Microsoft Basic Render
+// Driver) are left out. Utilization follows Task Manager: an engine's load is
+// the sum over its processes, the adapter's is its busiest engine.
+message HealthGpuAdapter {
+  int32 luid_high = 1;
+  uint32 luid_low = 2;
+  string name = 3;
+  string vendor = 4;
+  bool is_primary = 5; // the adapter the gpu_* fields describe
+  uint64 dedicated_total_bytes = 6;
+  uint64 shared_total_bytes = 7;
+  bool has_percent = 8;
+  double percent = 9;
+  bool has_dedicated_used = 10;
+  uint64 dedicated_used_bytes = 11;
+  bool has_shared_used = 12;
+  uint64 shared_used_bytes = 13;
+}
+
+// One real-time sample from the service (1 Hz).
+message HealthSample {
+  int64 unix_ms = 1;
+  bool has_cpu_percent = 2;
+  double cpu_percent = 3;
+  uint64 memory_used_bytes = 4;
+  uint64 memory_total_bytes = 5;
+  bool has_gpu_percent = 6;
+  double gpu_percent = 7;
+  bool has_net_download_bps = 8;
+  double net_download_bps = 9;   // bytes/sec
+  bool has_net_upload_bps = 10;
+  double net_upload_bps = 11;    // bytes/sec
+  bool has_disk_read_bps = 12;
+  double disk_read_bps = 13;     // bytes/sec (_Total aggregate)
+  bool has_disk_write_bps = 14;
+  double disk_write_bps = 15;    // bytes/sec (_Total aggregate)
+  uint64 disk_used_bytes = 16;   // primary / system volume (compat)
+  uint64 disk_total_bytes = 17;  // primary / system volume (compat)
+  uint64 uptime_ms = 18;
+  bool has_cpu_temp_c = 19;
+  double cpu_temp_c = 20;
+  bool has_gpu_temp_c = 21;
+  double gpu_temp_c = 22;
+  bool has_ssd_temp_c = 23;
+  double ssd_temp_c = 24;
+  // TASK-007.2 detail fields
+  bool has_cpu_current_mhz = 25;
+  double cpu_current_mhz = 26;
+  uint64 memory_available_bytes = 27;
+  bool has_memory_committed = 28;
+  uint64 memory_committed_bytes = 29;
+  uint64 memory_commit_limit_bytes = 30;
+  bool has_memory_cached = 31;
+  uint64 memory_cached_bytes = 32;
+  string ipv4 = 33;
+  string ipv6 = 34;
+  string gateway = 35;
+  string dns = 36;
+  repeated HealthProcessEntry top_cpu = 37;
+  repeated HealthProcessEntry top_memory = 38;
+  repeated HealthProcessEntry top_gpu = 39;
+  repeated HealthProcessEntry top_disk = 40;
+  repeated HealthProcessEntry top_network = 41;
+  // Per-logical-processor utilization (Processor(*)), excludes _Total.
+  repeated double cpu_core_percent = 42;
+  // Multi-disk / multi-volume inventory (issue #11). Temps not included.
+  repeated HealthVolume volumes = 43;
+  repeated HealthPhysicalDisk disks = 44;
+  // Memory Performance extras (Task Manager Performance > Memory).
+  bool has_memory_compressed = 45;
+  uint64 memory_compressed_bytes = 46;           // PDH \Memory\Compressed Bytes
+  bool has_memory_hardware_reserved = 47;
+  uint64 memory_hardware_reserved_bytes = 48;    // Installed − usable
+  bool has_memory_paged_pool = 49;
+  uint64 memory_paged_pool_bytes = 50;           // GetPerformanceInfo KernelPaged
+  bool has_memory_nonpaged_pool = 51;
+  uint64 memory_nonpaged_pool_bytes = 52;        // GetPerformanceInfo KernelNonpaged
+  bool has_memory_page_faults_per_sec = 53;
+  double memory_page_faults_per_sec = 54;        // PDH \Memory\Page Faults/sec
+  // GPU engines / VRAM usage / D3DKMT telemetry (selected adapter LUID)
+  bool has_gpu_util_3d = 55;
+  double gpu_util_3d = 56;
+  bool has_gpu_util_compute = 57;
+  double gpu_util_compute = 58;
+  bool has_gpu_util_copy = 59;
+  double gpu_util_copy = 60;
+  bool has_gpu_util_video_decode = 61;
+  double gpu_util_video_decode = 62;
+  bool has_gpu_util_video_encode = 63;
+  double gpu_util_video_encode = 64;
+  bool has_gpu_dedicated_used = 65;
+  uint64 gpu_dedicated_used_bytes = 66;
+  bool has_gpu_shared_used = 67;
+  uint64 gpu_shared_used_bytes = 68;
+  bool has_gpu_clock_mhz = 69;
+  double gpu_clock_mhz = 70;
+  bool has_gpu_memory_clock_mhz = 71;
+  double gpu_memory_clock_mhz = 72;
+  bool has_gpu_fan_rpm = 73;
+  double gpu_fan_rpm = 74;
+  bool has_gpu_power_percent = 75;               // D3DKMT scale %, not watts
+  double gpu_power_percent = 76;
+  // Network live + counters (active adapter)
+  bool has_net_peak_download_bps = 77;
+  double net_peak_download_bps = 78;
+  bool has_net_peak_upload_bps = 79;
+  double net_peak_upload_bps = 80;
+  bool has_net_avg_download_bps = 81;
+  double net_avg_download_bps = 82;
+  bool has_net_avg_upload_bps = 83;
+  double net_avg_upload_bps = 84;
+  bool has_net_utilization_percent = 85;
+  double net_utilization_percent = 86;
+  bool has_net_connection_ms = 87;
+  uint64 net_connection_ms = 88;
+  bool has_net_bytes_sent = 89;
+  uint64 net_bytes_sent = 90;
+  bool has_net_bytes_received = 91;
+  uint64 net_bytes_received = 92;
+  bool has_net_packets_sent = 93;
+  uint64 net_packets_sent = 94;
+  bool has_net_packets_received = 95;
+  uint64 net_packets_received = 96;
+  bool has_net_errors = 97;
+  uint64 net_errors = 98;
+  bool has_net_drops = 99;
+  uint64 net_drops = 100;
+  string net_ssid = 101;
+  bool has_net_signal_percent = 102;
+  double net_signal_percent = 103;
+  string net_wifi_channel = 104;
+  string net_wifi_frequency = 105;
+  string net_wifi_security = 106;
+  // GPU Video Processing engine (PDH engtype_VideoProcessing)
+  bool has_gpu_util_video_processing = 107;
+  double gpu_util_video_processing = 108;
+  // Phase 3 hardware sensors — storage SMART / lifetime (documented IOCTLs)
+  bool has_disk_power_on_hours = 109;
+  uint64 disk_power_on_hours = 110;
+  bool has_disk_total_bytes_written = 111;
+  uint64 disk_total_bytes_written = 112;
+  bool has_disk_total_bytes_read = 113;
+  uint64 disk_total_bytes_read = 114;
+  bool has_disk_smart_ok = 115;
+  bool disk_smart_ok = 116;  // true when SMART/critical warning reports healthy
+  repeated HealthDiskHealth disk_health = 117; // every physical disk
+  repeated HealthGpuAdapter gpus = 118; // every hardware GPU (issue #9)
+}
+
+message GetHealthSnapshot {}
+
+message HealthSnapshot {
+  HealthStaticInfo info = 1;
+  HealthSample sample = 2;
+}
+
+// Service → Client push every 1s (request_id = 0).
+message HealthUpdate {
+  HealthSample sample = 1;
+  HealthProcessInventoryUpdate process_inventory = 2;
+}
+
+message StartHealthMonitoring {}
+
+message StopHealthMonitoring {}
+
+// --- Diagnostics (TASK-008) ---
+
+message GetDiagnosticsSnapshot {}
+
+// Pipeline stage health: 0 = healthy, 1 = warning, 2 = error.
+message DiagnosticsSnapshot {
+  string service_version = 1;
+  uint32 protocol_version = 2;
+  int64 service_start_unix_ms = 3;
+  uint64 service_uptime_ms = 4;
+  string run_mode = 5; // "Console" | "Windows Service"
+  bool ipc_listening = 6;
+
+  bool live_subscribed = 7;
+  string live_channel = 8;
+  uint64 live_events_pushed = 9;
+  uint64 live_events_dropped = 10;
+  uint64 live_subscriber_reconnects = 11;
+  int64 last_live_event_unix_ms = 12;
+  string last_live_event_title = 13;
+  uint32 live_queue_depth = 14;
+  uint32 live_queue_capacity = 15;
+
+  uint64 ipc_messages_received = 16;
+  uint64 ipc_messages_sent = 17;
+  uint64 ipc_errors = 18;
+  uint32 connected_clients = 19;
+
+  uint32 service_pid = 20;
+  bool has_cpu_percent = 21;
+  double cpu_percent = 22;
+  uint64 working_set_bytes = 23;
+  uint32 thread_count = 24;
+  uint32 handle_count = 25;
+
+  int32 stage_event_log = 26;
+  int32 stage_collector = 27;
+  int32 stage_intelligence = 28;
+  int32 stage_ipc = 29;
+  string stage_detail = 30;
+
+  string windows_edition = 31;
+  string windows_version = 32;
+
+  // Phase 5 — service identity
+  string executable_path = 33;
+  string build_version = 34;
+  string git_commit = 35;
+  string binary_sha256 = 36;
+  string install_path = 37;
+  bool has_paths_match = 38;
+  bool paths_match = 39;
+  string scm_state = 40;
+  string scm_startup_type = 41;
+
+  // Phase 5 — IPC throughput (cumulative + rates when a prior sample exists)
+  uint64 ipc_bytes_received = 42;
+  uint64 ipc_bytes_sent = 43;
+  bool has_ipc_messages_per_sec = 44;
+  double ipc_messages_per_sec = 45;
+  bool has_ipc_bytes_per_sec = 46;
+  double ipc_bytes_per_sec = 47;
+
+  // Phase 5 — collectors
+  bool health_monitoring_active = 48;
+  double health_sample_rate_hz = 49;
+  bool network_etw_running = 50;
+  string network_etw_last_error = 51;
+
+  // Phase 5 — per-stage detail (status text; no invented timings)
+  string stage_event_log_detail = 52;
+  string stage_collector_detail = 53;
+  string stage_intelligence_detail = 54;
+  string stage_ipc_detail = 55;
+}
+
+// Client → Service: push one synthetic Pulse.Diagnostics TimelineEvent (no Event Log write).
+message InjectDiagnosticsTestEvent {}
+
+// ---------------------------------------------------------------------------
+// R3 Inventory Engine (ADR-011) — system description catalogs (not live Health).
+// Structured fields only; no UI-formatted strings. Envelope fields 37 / 38.
+// ---------------------------------------------------------------------------
+
+enum InventoryDomainId {
+  INVENTORY_DOMAIN_UNSPECIFIED = 0;
+  INVENTORY_DOMAIN_SERVICES = 1;
+  INVENTORY_DOMAIN_DRIVERS = 2;
+  INVENTORY_DOMAIN_SOFTWARE = 3;
+  INVENTORY_DOMAIN_USB = 4;
+  INVENTORY_DOMAIN_PCI = 5;
+  INVENTORY_DOMAIN_DISPLAYS = 6;
+  INVENTORY_DOMAIN_AUDIO = 7;
+  INVENTORY_DOMAIN_BLUETOOTH = 8;
+  INVENTORY_DOMAIN_PRINTERS = 9;
+  INVENTORY_DOMAIN_BATTERY = 10;
+  INVENTORY_DOMAIN_MOTHERBOARD = 11;
+  INVENTORY_DOMAIN_BIOS = 12;
+  INVENTORY_DOMAIN_CPU = 13;
+  INVENTORY_DOMAIN_MEMORY_MODULES = 14;
+  INVENTORY_DOMAIN_STORAGE = 15;
+  INVENTORY_DOMAIN_NETWORK_ADAPTERS = 16;
+}
+
+enum InventoryStatus {
+  INVENTORY_STATUS_UNSPECIFIED = 0;
+  INVENTORY_STATUS_AVAILABLE = 1;
+  INVENTORY_STATUS_UNSUPPORTED = 2;
+  INVENTORY_STATUS_ACCESS_DENIED = 3;
+  INVENTORY_STATUS_PARTIAL = 4;
+  INVENTORY_STATUS_ERROR = 5;
+}
+
+message InventoryServiceEntry {
+  string id = 1;              // stable: SCM service name
+  string display_name = 2;
+  string state = 3;
+  string start_type = 4;
+  string account = 5;
+  string binary_path = 6;
+  string description = 7;
+}
+
+message InventoryDriverEntry {
+  string id = 1;              // stable: SCM driver service key
+  string display_name = 2;
+  string state = 3;
+  string start_type = 4;
+  string binary_path = 5;
+  string description = 6;
+  string driver_type = 7;     // kernel | file_system | adapter | recognizer | other
+}
+
+message InventorySoftwareEntry {
+  string id = 1;              // stable: ProductCode GUID or uninstall:{arch}:{key}
+  string display_name = 2;
+  string version = 3;
+  string publisher = 4;
+  string install_date = 5;    // registry YYYYMMDD when present
+  string install_location = 6;
+  uint64 estimated_size_bytes = 7;
+  bool has_estimated_size = 8;
+  bool system_component = 9;
+  string architecture = 10;   // x64 | x86 (hive that owned the key)
+}
+
+message InventoryUsbEntry {
+  string id = 1;              // stable: Device Instance ID
+  string description = 2;
+  string hardware_id = 3;     // primary HardwareID
+  string manufacturer = 4;
+  string service = 5;
+  string class_name = 6;
+  string class_guid = 7;
+  uint32 problem_code = 8;
+  bool has_problem_code = 9;
+}
+
+message InventoryPciEntry {
+  string id = 1;              // stable: Device Instance Path / Instance ID
+  string description = 2;
+  string hardware_id = 3;     // primary HardwareID (PCI\\VEN_...&DEV_...)
+  string manufacturer = 4;
+  string service = 5;
+  string class_name = 6;
+  string class_guid = 7;
+  string location_info = 8;
+  uint32 problem_code = 9;
+  bool has_problem_code = 10;
+}
+
+// Shared PnP shape for Displays / Audio / Bluetooth (ADR-011 domain lists).
+message InventoryPnPDeviceEntry {
+  string id = 1;              // stable: Device Instance ID
+  string description = 2;
+  string hardware_id = 3;
+  string manufacturer = 4;
+  string service = 5;
+  string class_name = 6;
+  string class_guid = 7;
+  string location_info = 8;
+  uint32 problem_code = 9;
+  bool has_problem_code = 10;
+  string adapter_name = 11;   // Displays: EnumDisplayDevices adapter name when known
+  bool description_from_enum_display = 12; // Displays enrichment flag
+}
+
+message InventoryPrinterEntry {
+  string id = 1;              // stable: spooler printer name
+  string port_name = 2;
+  string driver_name = 3;
+  string location = 4;
+  string comment = 5;
+  bool is_shared = 6;
+  bool is_default = 7;
+  bool is_network = 8;
+  uint32 attributes = 9;
+  bool has_attributes = 10;
+}
+
+message InventoryBatteryEntry {
+  string id = 1;              // instance ID or system_power
+  string description = 2;
+  string manufacturer = 3;
+  string chemistry = 4;
+  uint32 design_capacity_mwh = 5;
+  bool has_design_capacity = 6;
+  uint32 full_charged_capacity_mwh = 7;
+  bool has_full_charged_capacity = 8;
+  uint32 cycle_count = 9;
+  bool has_cycle_count = 10;
+  uint32 capacity_percent = 11;
+  bool has_capacity_percent = 12;
+  string power_state = 13;    // online | offline | unknown
+  bool from_system_power_fallback = 14;
+}
+
+// Motherboard — SMBIOS Type 2 (Baseboard Information) via shared RSMB helper.
+message InventoryMotherboardEntry {
+  string id = 1;               // stable singleton: "motherboard"
+  string manufacturer = 2;
+  string product = 3;
+  string version = 4;
+  string serial_number = 5;
+  string asset_tag = 6;
+  string location_in_chassis = 7;
+  string board_type = 8;       // decoded SMBIOS Type 2 Board Type (Table 15)
+}
+
+// BIOS — SMBIOS Type 0 (BIOS Information) via shared RSMB helper.
+message InventoryBiosEntry {
+  string id = 1;                // stable singleton: "bios"
+  string vendor = 2;
+  string version = 3;
+  string release_date = 4;
+  uint32 major_release = 5;
+  bool has_major_release = 6;
+  uint32 minor_release = 7;
+  bool has_minor_release = 8;
+  uint64 rom_size_bytes = 9;
+  bool has_rom_size_bytes = 10;
+  bool uefi_capable = 11;        // BIOS Characteristics Extension Byte 2 bit 3
+  bool has_uefi_capable = 12;
+}
+
+// CPU — registry ProcessorNameString + GetLogicalProcessorInformationEx +
+// CPUID (same identity patterns as system_overview_info EnrichCpuOverview).
+message InventoryCpuEntry {
+  string id = 1;                 // stable singleton: "cpu"
+  string name = 2;                // ProcessorNameString
+  string manufacturer = 3;        // CPUID vendor string
+  string architecture = 4;        // x64 | ARM64 | x86
+  uint32 sockets = 5;
+  bool has_sockets = 6;
+  uint32 physical_cores = 7;
+  bool has_physical_cores = 8;
+  uint32 logical_processors = 9;
+  bool has_logical_processors = 10;
+  uint32 base_clock_mhz = 11;
+  bool has_base_clock_mhz = 12;
+  uint32 numa_nodes = 13;
+  bool has_numa_nodes = 14;
+  uint64 l1_cache_bytes = 15;
+  bool has_l1_cache_bytes = 16;
+  uint64 l2_cache_bytes = 17;
+  bool has_l2_cache_bytes = 18;
+  uint64 l3_cache_bytes = 19;
+  bool has_l3_cache_bytes = 20;
+  string instruction_set = 21;
+  bool smt_enabled = 22;
+  bool has_smt_enabled = 23;
+  string virtualization_vendor = 24;
+}
+
+// Memory module — SMBIOS Type 17 (Memory Device) list, one row per SMBIOS
+// slot (including unpopulated slots reported by firmware; populated flag
+// distinguishes them).
+message InventoryMemoryModuleEntry {
+  string id = 1;                 // stable: Device Locator string
+  string bank_locator = 2;
+  string manufacturer = 3;
+  string part_number = 4;
+  string serial_number = 5;
+  uint64 size_bytes = 6;
+  bool has_size_bytes = 7;
+  uint32 speed_mts = 8;
+  bool has_speed_mts = 9;
+  uint32 configured_speed_mts = 10;
+  bool has_configured_speed_mts = 11;
+  string form_factor = 12;
+  string memory_type = 13;       // DDR4 | DDR5 | ...
+  bool is_ecc = 14;
+  bool has_is_ecc = 15;
+  uint32 total_width_bits = 16;
+  bool has_total_width_bits = 17;
+  uint32 data_width_bits = 18;
+  bool has_data_width_bits = 19;
+  uint32 configured_voltage_mv = 20;
+  bool has_configured_voltage_mv = 21;
+  bool populated = 22;
+}
+
+// Storage — physical disk identity via SetupAPI DiskDrive interfaces +
+// IOCTL_STORAGE_QUERY_PROPERTY. Not live SMART telemetry.
+message InventoryStorageEntry {
+  string id = 1;                  // stable: SetupAPI device instance id
+  string device_path = 2;         // \\.\PhysicalDriveN when resolved
+  uint32 physical_drive_number = 3;
+  bool has_physical_drive_number = 4;
+  string model = 5;
+  string vendor = 6;
+  string serial_number = 7;
+  string firmware_revision = 8;
+  string bus_type = 9;
+  string media_type = 10;         // SSD | HDD | Removable | Unknown
+  uint64 size_bytes = 11;
+  bool has_size_bytes = 12;
+  uint32 sector_size_bytes = 13;
+  bool has_sector_size_bytes = 14;
+  string partition_style = 15;    // GPT | MBR | RAW
+  bool is_removable = 16;
+  bool has_is_removable = 17;
+  bool trim_supported = 18;
+  bool has_trim_supported = 19;
+  string manufacturer = 20;       // SetupAPI SPDRP_MFG when present
+  string description = 21;        // SetupAPI friendly/device description
+}
+
+// Network adapter — GetAdaptersAddresses primary; SetupAPI/net class
+// registry enrichment for driver fields only (not membership).
+message InventoryNetworkAdapterEntry {
+  string id = 1;                  // stable: AdapterName GUID string
+  string description = 2;
+  string friendly_name = 3;
+  string mac_address = 4;
+  string connection_type = 5;     // Ethernet | Wi-Fi | Loopback | ...
+  uint32 if_index = 6;
+  bool has_if_index = 7;
+  uint32 mtu = 8;
+  bool has_mtu = 9;
+  string operational_status = 10; // Up | Down | Testing | Unknown | ...
+  bool dhcp_enabled = 11;
+  bool has_dhcp_enabled = 12;
+  uint64 link_speed_bps = 13;
+  bool has_link_speed_bps = 14;
+  bool is_loopback = 15;
+  repeated string ipv4_addresses = 16;
+  repeated string ipv6_addresses = 17;
+  repeated string gateway_addresses = 18;
+  repeated string dns_addresses = 19;
+  string driver_provider = 20;
+  string driver_version = 21;
+  string driver_date = 22;
+}
+
+message GetInventoryDomain {
+  InventoryDomainId domain = 1;
+  bool force_refresh = 2;
+  uint64 since_generation = 3;
+  uint32 limit = 4;           // 0 = collector default
+}
+
+message InventoryDomainSnapshot {
+  InventoryDomainId domain = 1;
+  InventoryStatus status = 2;
+  string status_detail = 3;
+  bool truncated = 4;
+  uint64 generation = 5;
+  int64 generated_at_unix_ms = 6;
+  bool full_resync = 7;
+  uint32 cache_ttl_ms = 8;
+  repeated InventoryServiceEntry services = 10;
+  repeated InventoryDriverEntry drivers = 11;
+  repeated InventorySoftwareEntry software = 12;
+  repeated InventoryUsbEntry usb = 13;
+  repeated InventoryPciEntry pci = 14;
+  repeated InventoryPnPDeviceEntry displays = 15;
+  repeated InventoryPnPDeviceEntry audio = 16;
+  repeated InventoryPnPDeviceEntry bluetooth = 17;
+  repeated InventoryPrinterEntry printers = 18;
+  repeated InventoryBatteryEntry batteries = 19;
+  repeated InventoryMotherboardEntry motherboard = 20;
+  repeated InventoryBiosEntry bios = 21;
+  repeated InventoryCpuEntry cpu = 22;
+  repeated InventoryMemoryModuleEntry memory_modules = 23;
+  repeated InventoryStorageEntry storage = 24;
+  repeated InventoryNetworkAdapterEntry network_adapters = 25;
+}
+
+message Envelope {
+  uint64 request_id = 1; // 0 = server push
+  oneof body {
+    ClientHello client_hello = 10;
+    ServerHello server_hello = 11;
+    Ping ping = 12;
+    Pong pong = 13;
+    Heartbeat heartbeat = 14;
+    GetTimelineSnapshot get_timeline_snapshot = 20;
+    TimelineSnapshot timeline_snapshot = 21;
+    TimelineEvent live_timeline_event = 22; // push (request_id = 0)
+    StartLiveMonitoring start_live_monitoring = 23;
+    StopLiveMonitoring stop_live_monitoring = 24;
+    GetHealthSnapshot get_health_snapshot = 25;
+    HealthSnapshot health_snapshot = 26;
+    HealthUpdate health_update = 27; // push (request_id = 0)
+    StartHealthMonitoring start_health_monitoring = 28;
+    StopHealthMonitoring stop_health_monitoring = 29;
+    GetDiagnosticsSnapshot get_diagnostics_snapshot = 30;
+    DiagnosticsSnapshot diagnostics_snapshot = 31;
+    InjectDiagnosticsTestEvent inject_diagnostics_test_event = 32;
+    GetProcessDetails get_process_details = 33;
+    ProcessDetails process_details = 34;
+    GetTimelineEventDetail get_timeline_event_detail = 35;
+    TimelineEventDetail timeline_event_detail = 36;
+    GetInventoryDomain get_inventory_domain = 37;
+    InventoryDomainSnapshot inventory_domain_snapshot = 38;
+    ErrorResponse error = 99;
+  }
+}
