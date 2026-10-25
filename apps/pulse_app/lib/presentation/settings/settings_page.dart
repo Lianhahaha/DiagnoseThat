@@ -17,7 +17,9 @@ import '../../application/update_check_controller.dart';
 import '../../app/theme/pulse_theme.dart';
 import '../../assistant/local_ai_http.dart';
 import '../../ipc/pulse_ipc_client.dart';
+import '../../logging/app_log_file.dart';
 import '../../platform/browser.dart';
+import '../../platform/folder_opener.dart';
 import '../../platform/local_ai_token_store.dart';
 import '../../platform/pulse_deployment.dart';
 import '../components/pulse_app_bar.dart';
@@ -872,20 +874,50 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: LucideIcons.fileText,
                 title: 'Export logs',
                 subtitle: 'Write recent app log lines to Downloads/DiagnoseThat',
-                trailing: PulseButton(
-                  label: 'Export',
-                  icon: LucideIcons.download,
-                  variant: PulseButtonVariant.secondary,
-                  onPressed: () async {
-                    try {
-                      final saved = await diag.exportLogsOnly();
-                      if (context.mounted) _snack(context, saved.summary);
-                    } catch (e) {
-                      if (context.mounted) {
-                        _snack(context, 'Failed: $e', error: true);
-                      }
-                    }
-                  },
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'Open log folder',
+                      icon: const Icon(LucideIcons.folderOpen, size: 16),
+                      onPressed: () async {
+                        final dir = AppLogFile.defaultDirectory;
+                        if (dir == null) {
+                          if (context.mounted) {
+                            _snack(
+                              context,
+                              'Log folder is unavailable',
+                              error: true,
+                            );
+                          }
+                          return;
+                        }
+                        try {
+                          await openDirectory(dir);
+                        } catch (e) {
+                          if (context.mounted) {
+                            _snack(context, 'Failed: $e', error: true);
+                          }
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 4),
+                    PulseButton(
+                      label: 'Export',
+                      icon: LucideIcons.download,
+                      variant: PulseButtonVariant.secondary,
+                      onPressed: () async {
+                        try {
+                          final saved = await diag.exportLogsOnly();
+                          if (context.mounted) _snack(context, saved.summary);
+                        } catch (e) {
+                          if (context.mounted) {
+                            _snack(context, 'Failed: $e', error: true);
+                          }
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SoftDivider(indent: 52),
