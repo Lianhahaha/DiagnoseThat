@@ -111,7 +111,7 @@ int wmain() {
     return 6;
   }
 
-  // Mirror Pulse UI: handshake uses request_id=1; snapshot uses a separate id
+  // Mirror DiagnoseThat UI: handshake uses request_id=1; snapshot uses a separate id
   // (>=1000) so ServerHello cannot be mistaken for TimelineSnapshot.
   constexpr uint64_t kSnapshotRequestId = 1000;
   pulse::ipc::Envelope snap_req;

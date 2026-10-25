@@ -1,5 +1,5 @@
 name: pulse_protocol
-description: Pulse IPC wire codec and constants (bootstrap)
+description: DiagnoseThat IPC wire codec and constants (bootstrap)
 version: 0.1.0
 publish_to: none
 
