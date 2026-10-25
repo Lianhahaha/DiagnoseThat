@@ -5,7 +5,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../app/theme/pulse_theme.dart';
 import 'safe_hover.dart';
 
-/// Native-feeling custom title bar that blends into Pulse chrome.
+/// Native-feeling custom title bar that blends into DiagnoseThat chrome.
 class PulseTitleBar extends StatefulWidget {
   const PulseTitleBar({
     super.key,

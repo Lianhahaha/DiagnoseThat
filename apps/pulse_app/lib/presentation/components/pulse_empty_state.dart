@@ -103,7 +103,7 @@ class _IconPlate extends StatelessWidget {
   }
 }
 
-/// Official Pulse tile for empty / onboarding surfaces.
+/// Official DiagnoseThat tile for empty / onboarding surfaces.
 class PulseBrandMark extends StatelessWidget {
   const PulseBrandMark({super.key, this.size = 96});
 

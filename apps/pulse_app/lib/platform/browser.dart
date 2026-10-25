@@ -11,7 +11,7 @@ const String kPulseGitHubPrefix = 'https://github.com/Lianhahaha/DiagnoseThat/';
 const int _kShellExecuteSuccessFloor = 32;
 
 /// Opens [url] in the default browser. Refuses anything outside
-/// [kPulseGitHubPrefix], so data from the network can never make Pulse open
+/// [kPulseGitHubPrefix], so data from the network can never make DiagnoseThat open
 /// another site. Returns false when it was refused or Windows failed.
 bool openPulseGitHubPage(Uri url) {
   final text = url.toString();

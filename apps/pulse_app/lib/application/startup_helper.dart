@@ -4,7 +4,7 @@ import 'package:launch_at_startup/launch_at_startup.dart';
 
 import '../logging/app_logger.dart';
 
-/// User-session autostart for Pulse.exe (not PulseService).
+/// User-session autostart for DiagnoseThat.exe (not PulseService).
 ///
 /// Uses the OS-supported startup registration provided by `launch_at_startup`
 /// (Windows Run-key / equivalent). Does not modify SCM or the service.

@@ -5,7 +5,7 @@
 
 namespace pulse {
 
-/// How Pulse treats an Event Log channel under LocalService.
+/// How DiagnoseThat treats an Event Log channel under LocalService.
 enum class EventLogChannelKind {
   /// Always attempt; failure for System is fatal to the multi-channel snapshot.
   Required,

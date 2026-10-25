@@ -27,9 +27,9 @@ String assistantToolActivityLabel(String toolName) {
   };
 }
 
-/// Read-only diagnostic tools for Pulse Assistant via PulseService IPC.
+/// Read-only diagnostic tools for DiagnoseThat Assistant via PulseService IPC.
 ///
-/// Calls PulseService over IPC. This layer does not mutate Windows or Pulse
+/// Calls PulseService over IPC. This layer does not mutate Windows or DiagnoseThat
 /// configuration.
 class IpcAssistantToolLayer implements AssistantToolLayer {
   IpcAssistantToolLayer({required this._ipc});

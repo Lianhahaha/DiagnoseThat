@@ -6,12 +6,12 @@ import '../logging/app_logger.dart';
 /// Removes what AI Integration (PulseMCP, removed in 1.3 — ADR-013) left on
 /// this PC, once:
 ///
-/// * the `pulse` server entry Pulse added to AI client configs (Claude
+/// * the `pulse` server entry DiagnoseThat added to AI client configs (Claude
 ///   Desktop, Cursor, Windsurf, Cline, VS Code), so those apps stop trying to
 ///   launch a PulseMCP that no longer exists;
-/// * Pulse's own MCP folders (`%LOCALAPPDATA%\Pulse\mcp`, `logs\pulsemcp`).
+/// * DiagnoseThat's own MCP folders (`%LOCALAPPDATA%\Pulse\mcp`, `logs\pulsemcp`).
 ///
-/// Only entries recorded as `registeredByPulse` in Pulse's marker file are
+/// Only entries recorded as `registeredByPulse` in DiagnoseThat's marker file are
 /// touched; servers the user added themselves are left alone. Every edited
 /// config is backed up next to the original first.
 class LegacyMcpCleanup {

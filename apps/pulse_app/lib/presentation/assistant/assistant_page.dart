@@ -7,7 +7,7 @@ import '../../ipc/pulse_ipc_client.dart';
 import '../components/pulse_app_bar.dart';
 import 'assistant_panel.dart';
 
-/// Full-page Pulse Assistant (sidebar destination — not a floating widget).
+/// Full-page DiagnoseThat Assistant (sidebar destination — not a floating widget).
 class AssistantPage extends StatefulWidget {
   const AssistantPage({super.key, required this.title});
 

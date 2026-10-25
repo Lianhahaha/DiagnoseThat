@@ -1,4 +1,4 @@
-/// Reusable Midnight UI building blocks for Pulse Desktop (ADR-012).
+/// Reusable Midnight UI building blocks for DiagnoseThat Desktop (ADR-012).
 library;
 
 export 'connection_indicator.dart';

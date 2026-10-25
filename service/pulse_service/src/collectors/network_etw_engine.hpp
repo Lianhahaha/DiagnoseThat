@@ -17,7 +17,7 @@ struct NetworkPidBytes {
   [[nodiscard]] uint64_t total() const { return send_bytes + recv_bytes; }
 };
 
-/// Pulse-owned real-time ETW session (`PulseHealthNet`) for System Health
+/// DiagnoseThat-owned real-time ETW session (`PulseHealthNet`) for System Health
 /// per-process network attribution. Observation only — no TDH in the callback.
 /// See ADR-009 and docs/architecture/20-etw-integration.md.
 class NetworkEtwEngine {

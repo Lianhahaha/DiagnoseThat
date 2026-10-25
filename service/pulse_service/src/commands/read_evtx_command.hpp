@@ -18,9 +18,10 @@ enum ReadEvtxExitCode : int {
 
 /// `PulseService.exe --read-evtx <file.evtx> --out <result.bin>`
 ///
-/// Runs as the calling user (no service, no pipe, no elevation): the Pulse app
-/// starts it to open an .evtx exported from another PC. Each event is
-/// explained exactly like a live event and written to `out` as wire frames:
+/// Runs as the calling user (no service, no pipe, no elevation): the
+/// DiagnoseThat app starts it to open an .evtx exported from another PC.
+/// Each event is explained exactly like a live event and written to `out` as
+/// wire frames:
 ///
 ///   frame(Envelope{TimelineEvent}) ... frame(Envelope{TimelineSnapshot})
 ///

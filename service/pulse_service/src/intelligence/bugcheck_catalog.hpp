@@ -18,7 +18,7 @@ enum class BugcheckCause : std::uint8_t {
   Manual,
 };
 
-/// A stop code Pulse can name and explain.
+/// A stop code DiagnoseThat can name and explain.
 struct BugcheckInfo {
   std::uint32_t code = 0;
   /// Symbolic name from Microsoft's Bug Check Code Reference.

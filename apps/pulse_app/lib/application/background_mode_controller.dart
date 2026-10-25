@@ -76,7 +76,7 @@ class BackgroundModeController extends ChangeNotifier
     windowManager.addListener(this);
     await windowManager.setPreventClose(true);
 
-    // Starting Pulse again while it runs (Start menu, desktop shortcut)
+    // Starting DiagnoseThat again while it runs (Start menu, desktop shortcut)
     // brings this window forward; the runner keeps the second copy from
     // opening (windows/runner/single_instance.h).
     _singleInstanceChannel.setMethodCallHandler((call) async {
@@ -307,7 +307,7 @@ class BackgroundModeController extends ChangeNotifier
     notifyListeners();
   }
 
-  /// Terminates Pulse.exe only. Does not stop or uninstall PulseService.
+  /// Terminates DiagnoseThat.exe only. Does not stop or uninstall PulseService.
   Future<void> exitPulseUi() async {
     if (_exiting) return;
     _exiting = true;

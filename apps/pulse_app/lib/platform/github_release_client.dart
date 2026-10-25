@@ -4,7 +4,7 @@ import 'dart:io';
 
 import 'package:pulse_protocol/pulse_constants.dart';
 
-/// The newest published Pulse release on GitHub.
+/// The newest published DiagnoseThat release on GitHub.
 class ReleaseInfo {
   const ReleaseInfo({
     required this.version,
@@ -42,7 +42,7 @@ abstract class LatestReleaseSource {
 /// Reads `GET /repos/Lianhahaha/DiagnoseThat/releases/latest` from the
 /// GitHub API.
 ///
-/// The request carries only what HTTP needs (Pulse's version in the
+/// The request carries only what HTTP needs (DiagnoseThat's version in the
 /// User-Agent, which GitHub requires). Nothing about this PC is sent.
 class GitHubLatestRelease implements LatestReleaseSource {
   const GitHubLatestRelease({this.timeout = const Duration(seconds: 10)});
@@ -51,7 +51,7 @@ class GitHubLatestRelease implements LatestReleaseSource {
     'https://api.github.com/repos/Lianhahaha/DiagnoseThat/releases/latest',
   );
 
-  /// Release pages must stay on this prefix before Pulse opens them.
+  /// Release pages must stay on this prefix before DiagnoseThat opens them.
   static const releasePagePrefix =
       'https://github.com/Lianhahaha/DiagnoseThat/releases/';
 

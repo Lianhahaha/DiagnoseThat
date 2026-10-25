@@ -8,12 +8,12 @@ import 'settings_controller.dart';
 
 enum UpdateCheckStatus { idle, checking, upToDate, available, failed }
 
-/// Tells the GitHub edition when a newer Pulse is published.
+/// Tells the GitHub edition when a newer DiagnoseThat is published.
 ///
 /// Never downloads or installs anything: it reads the latest release from
 /// GitHub and links to its page. Checks happen when the user asks, or once a
 /// week when "Check automatically" is on (off by default). The Store edition
-/// does not use this; the Store updates Pulse itself.
+/// does not use this; the Store updates DiagnoseThat itself.
 class UpdateCheckController extends ChangeNotifier {
   UpdateCheckController({
     required this.settings,

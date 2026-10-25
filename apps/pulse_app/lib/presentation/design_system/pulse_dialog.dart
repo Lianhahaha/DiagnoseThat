@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../app/theme/pulse_theme.dart';
 
-/// Themed [AlertDialog] helper for Pulse confirmations and notices.
+/// Themed [AlertDialog] helper for DiagnoseThat confirmations and notices.
 Future<T?> showPulseDialog<T>({
   required BuildContext context,
   required String title,

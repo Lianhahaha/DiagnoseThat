@@ -17,7 +17,7 @@ enum class EventLevel : std::uint8_t {
   Unknown = 255,
 };
 
-/// Strongly typed Event Log record for Pulse (read-only observation).
+/// Strongly typed Event Log record for DiagnoseThat (read-only observation).
 /// Missing fields are represented with empty / nullopt — never invent values.
 struct EventRecord {
   /// UTC file-time converted to ISO-8601 when available.

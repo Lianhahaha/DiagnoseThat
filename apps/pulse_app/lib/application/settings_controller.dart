@@ -141,17 +141,17 @@ class SettingsController extends ChangeNotifier {
   /// numbers in exported files. On by default (privacy first).
   bool maskPersonalDataInExports = true;
 
-  /// Weekly GitHub release check (GitHub edition). Off by default: Pulse
+  /// Weekly GitHub release check (GitHub edition). Off by default: DiagnoseThat
   /// contacts nothing unless the user turns this on or clicks Check.
   bool checkUpdatesAutomatically = false;
 
   /// Empty = Downloads/DiagnoseThat default. Absolute path when set.
   String exportDirectory = '';
 
-  /// Keep Pulse.exe alive in the system tray when the main window is closed.
+  /// Keep DiagnoseThat.exe alive in the system tray when the main window is closed.
   bool backgroundMode = false;
 
-  /// Register Pulse.exe for user-session startup (not PulseService).
+  /// Register DiagnoseThat.exe for user-session startup (not PulseService).
   bool startWithWindows = false;
 
   /// Allow local Windows notifications for sustained critical conditions.

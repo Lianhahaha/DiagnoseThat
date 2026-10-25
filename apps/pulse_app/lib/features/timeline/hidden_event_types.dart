@@ -3,7 +3,7 @@ import 'package:pulse_protocol/pulse_wire.dart';
 /// An event type the user chose to hide from the Timeline (issue #25):
 /// every event with this provider and Event ID.
 ///
-/// Hiding only changes what Pulse shows. Windows' logs are untouched, the
+/// Hiding only changes what DiagnoseThat shows. Windows' logs are untouched, the
 /// events stay in reports and exports, and Settings lists every hidden type
 /// so it can be shown again.
 class HiddenEventType {

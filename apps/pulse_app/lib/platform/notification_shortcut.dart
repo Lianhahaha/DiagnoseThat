@@ -62,11 +62,11 @@ const int _kSlgpUncPriority = 0x2;
 /// Reads the target path of a `.lnk` file, or null when it cannot be read.
 typedef ShortcutTargetReader = String? Function(String shortcutPath);
 
-/// Removes the notification shortcut when it points to another `Pulse.exe`.
+/// Removes the notification shortcut when it points to another `DiagnoseThat.exe`.
 ///
 /// WinToast only checks that the shortcut exists, not where it points. Because
-/// the taskbar takes Pulse's icon from the shortcut that carries its
-/// AppUserModelID, a stale one (Pulse reinstalled elsewhere, a deleted dev
+/// the taskbar takes DiagnoseThat's icon from the shortcut that carries its
+/// AppUserModelID, a stale one (DiagnoseThat reinstalled elsewhere, a deleted dev
 /// build) showed a blank taskbar icon. Deleting it lets `localNotifier.setup`
 /// recreate it for the running executable. Returns true when it was removed.
 bool removeStaleNotificationShortcut({
@@ -108,7 +108,7 @@ bool _samePath(String a, String b) =>
 ///
 /// Do not call `release()` on the COM objects: package:win32 releases them
 /// from a Finalizer, and an extra manual release is a use-after-free that
-/// crashed Pulse.exe a few seconds after startup once the GC ran.
+/// crashed DiagnoseThat.exe a few seconds after startup once the GC ran.
 String? readShortcutTarget(String shortcutPath) {
   final link = ShellLink.createInstance();
   final persist = IPersistFile.from(link);

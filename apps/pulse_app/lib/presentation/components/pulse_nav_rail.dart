@@ -24,7 +24,7 @@ class PulseNavItem {
   final String? tooltip;
 }
 
-/// Midnight icon rail (ADR-012 D6): a 76 px floating panel with the Pulse
+/// Midnight icon rail (ADR-012 D6): a 76 px floating panel with the DiagnoseThat
 /// mark on top, primary destinations, then secondary destinations and an
 /// optional status footer pinned to the bottom.
 class PulseNavRail extends StatelessWidget {

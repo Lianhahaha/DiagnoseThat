@@ -145,7 +145,7 @@ class TimelineLibraryController extends ChangeNotifier {
             ?HiddenEventType.fromJson(Map<String, dynamic>.from(item)),
       ];
     } catch (e) {
-      // A damaged list must not stop Pulse from starting: hide nothing.
+      // A damaged list must not stop DiagnoseThat from starting: hide nothing.
       logger.warn('TimelineLibrary', 'hidden event types unreadable, ignored: $e');
       return [];
     }

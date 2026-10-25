@@ -1,11 +1,11 @@
-/// Pure close / exit policy for Pulse.exe (UI process only).
+/// Pure close / exit policy for DiagnoseThat.exe (UI process only).
 ///
 /// Never stops, uninstalls, or reconfigures PulseService.
 enum PulseUiCloseDecision {
-  /// Hide the main window; keep Pulse.exe, IPC, tray, and alerts alive.
+  /// Hide the main window; keep DiagnoseThat.exe, IPC, tray, and alerts alive.
   hideToTray,
 
-  /// Terminate Pulse.exe. PulseService is unaffected.
+  /// Terminate DiagnoseThat.exe. PulseService is unaffected.
   exitUi,
 }
 
@@ -18,5 +18,5 @@ PulseUiCloseDecision resolveWindowCloseDecision({
       : PulseUiCloseDecision.exitUi;
 }
 
-/// Tray → Exit Pulse always terminates the UI process.
+/// Tray → Exit DiagnoseThat always terminates the UI process.
 PulseUiCloseDecision resolveTrayExitDecision() => PulseUiCloseDecision.exitUi;

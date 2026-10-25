@@ -24,7 +24,7 @@ class AssistantTurnResult {
   bool get ok => errorCode == null && !cancelled;
 }
 
-/// Controlled read-only tool-calling loop for Pulse Assistant.
+/// Controlled read-only tool-calling loop for DiagnoseThat Assistant.
 ///
 /// Flow: user → LocalAiProvider → allowlisted tools → PulseService IPC → LLM.
 class AssistantOrchestrator {

@@ -1,4 +1,4 @@
-/// Development feature flags for Pulse UI.
+/// Development feature flags for DiagnoseThat UI.
 ///
 /// Enable mock timeline:
 /// `flutter run -d windows --dart-define=PULSE_MOCK_TIMELINE=true`

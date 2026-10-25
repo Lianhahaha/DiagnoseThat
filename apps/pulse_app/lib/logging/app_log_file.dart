@@ -7,7 +7,7 @@ const int kAppLogRetentionDays = 14;
 /// UTF-8 byte order mark written at the start of each new log file.
 const List<int> _utf8ByteOrderMark = [0xEF, 0xBB, 0xBF];
 
-/// Daily JSON-lines log file for Pulse.exe, in the same shape as the
+/// Daily JSON-lines log file for DiagnoseThat.exe, in the same shape as the
 /// PulseService log (`timestamp`, `level`, `component`, `message`).
 ///
 /// Lives at `%LOCALAPPDATA%\DiagnoseThat\logs\app\pulse-app-YYYY-MM-DD.jsonl`. Writes

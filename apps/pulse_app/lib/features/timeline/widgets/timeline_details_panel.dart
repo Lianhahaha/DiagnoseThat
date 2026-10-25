@@ -197,7 +197,7 @@ class _TimelineDetailsPanelState extends State<TimelineDetailsPanel> {
   }
 
   /// Hides or shows again every event with this provider and Event ID
-  /// (issue #25). Only Pulse's view changes; Windows' logs stay as they are.
+  /// (issue #25). Only DiagnoseThat's view changes; Windows' logs stay as they are.
   Future<void> _toggleHiddenType(TimelineLibraryController library) async {
     final key = hiddenEventTypeKeyOf(event);
     if (key == null) return;

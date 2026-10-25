@@ -19,7 +19,7 @@ namespace pulse {
 ///    program and task behind a wake timer
 ///
 /// WakeSourceType is deliberately not used: Microsoft does not document what
-/// its values mean, and Pulse does not guess.
+/// its values mean, and DiagnoseThat does not guess.
 ///
 /// Needs TimelineEvent::raw_xml; the collector renders it when
 /// IsWakeDiagnosticEvent() is true. Returns nullopt without event data or

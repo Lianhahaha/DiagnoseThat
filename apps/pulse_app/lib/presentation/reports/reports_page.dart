@@ -19,7 +19,7 @@ import '../utils/pulse_user_errors.dart';
 import 'report_exporter.dart';
 import 'report_models.dart';
 
-/// Exports existing Pulse data as branded JSON / CSV / HTML / PDF reports.
+/// Exports existing DiagnoseThat data as branded JSON / CSV / HTML / PDF reports.
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key, required this.title});
 

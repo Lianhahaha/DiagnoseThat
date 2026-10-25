@@ -6,7 +6,7 @@ import 'timeline_query.dart';
 /// True when the retained session already contains at least one Security-channel event.
 ///
 /// Used to distinguish "Security unavailable under LocalService" from an empty
-/// filter result. Pulse does not invent Security availability.
+/// filter result. DiagnoseThat does not invent Security availability.
 bool sessionContainsSecurityChannelEvents(Iterable<TimelineEvent> events) {
   for (final e in events) {
     if (e.displayChannel.toLowerCase() == 'security') return true;

@@ -14,8 +14,8 @@ const int _kSeeMaskNocloseprocess = 0x00000040;
 /// (the background isolate that runs the elevated launch).
 const int _kSeeMaskNoasync = 0x00000100;
 
-/// SEE_MASK_FLAG_NO_UI — no shell error dialogs (Pulse shows its own message);
-/// the UAC security prompt is exempt and still appears.
+/// SEE_MASK_FLAG_NO_UI — no shell error dialogs (DiagnoseThat shows its own
+/// message); the UAC security prompt is exempt and still appears.
 const int _kSeeMaskFlagNoUi = 0x00000400;
 
 /// win32 package exposes SERVICE_QUERY_STATUS but not SERVICE_QUERY_CONFIG.
@@ -32,8 +32,9 @@ abstract class PulseServiceLauncher {
 
   /// Runs `PulseService.exe <args>` elevated and waits for exit.
   ///
-  /// Classic: Start/stop/restart prefer the SCM-installed binary. Install/repair
-  /// require a package-local `PulseService.exe` (beside Pulse or under `service\`).
+  /// Classic: Start/stop/restart prefer the SCM-installed binary.
+  /// Install/repair require a package-local `PulseService.exe` (beside
+  /// DiagnoseThat or under `service\`).
   ///
   /// Store/MSIX: install/uninstall are refused; start/stop use the package-local
   /// or SCM path without CreateService.
@@ -186,7 +187,7 @@ class WindowsPulseServiceLauncher implements PulseServiceLauncher {
     // ShellExecuteEx shows UAC and runs a nested message loop, then
     // WaitForSingleObject blocks for the whole service action. On the UI
     // thread that froze the window and let Windows re-enter the Flutter engine
-    // mid-call (Pulse.exe crashed with 0xc000041d in flutter_windows.dll after
+    // mid-call (DiagnoseThat.exe crashed with 0xc000041d in flutter_windows.dll after
     // Restart / Start service). A background isolate has its own thread.
     final timeoutMs = timeout.inMilliseconds;
     final owner = _pulseMainWindow();
@@ -199,8 +200,8 @@ class WindowsPulseServiceLauncher implements PulseServiceLauncher {
 /// Window class of the Flutter runner (windows/runner/win32_window.cpp).
 const String _kRunnerWindowClass = 'FLUTTER_RUNNER_WIN32_WINDOW';
 
-/// Pulse's main window, or NULL. Owning the UAC prompt with it keeps the
-/// prompt in front of Pulse; without an owner it could open behind the window
+/// DiagnoseThat's main window, or NULL. Owning the UAC prompt with it keeps the
+/// prompt in front of DiagnoseThat; without an owner it could open behind the window
 /// and look like the action failed ("Administrator approval is required").
 int _pulseMainWindow() {
   final className = _kRunnerWindowClass.toNativeUtf16();

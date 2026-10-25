@@ -16,7 +16,7 @@ class TimelineActivityBucket {
 
 /// Plain-language summary of recent Windows activity for the Timeline hero.
 ///
-/// Built only from events Pulse already holds in the session — it never
+/// Built only from events DiagnoseThat already holds in the session — it never
 /// estimates or extrapolates counts it has not seen.
 class TimelineActivitySummary {
   const TimelineActivitySummary({

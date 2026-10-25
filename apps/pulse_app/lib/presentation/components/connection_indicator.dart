@@ -192,7 +192,7 @@ class _ConnectionDotState extends State<ConnectionDot>
   }
 
   void _syncAnimation() {
-    // Pulse only while connecting — connected is a calm steady dot.
+    // The dot pulses only while connecting — connected is a calm steady dot.
     if (widget.state == IpcConnectionState.connecting) {
       _controller.repeat(reverse: true);
     } else {

@@ -74,7 +74,7 @@ class AlertStateEngine {
 
   /// Evaluate CPU / memory / overall system-health critical flags.
   ///
-  /// [systemHealthCritical] should reflect existing Pulse posture (e.g.
+  /// [systemHealthCritical] should reflect the overall system posture (e.g.
   /// [SystemStatusLevel.critical]), not a second metric collector.
   List<AlertEvaluation> onSample({
     required DateTime now,

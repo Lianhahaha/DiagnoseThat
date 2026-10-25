@@ -25,17 +25,18 @@ class PulseThemeScope {
   }
 }
 
-/// Convenient access to Pulse design tokens from a [BuildContext].
+/// Convenient access to DiagnoseThat design tokens from a [BuildContext].
 extension PulseThemeX on BuildContext {
   PulseThemeData get pulseTheme =>
       Theme.of(this).extension<PulseThemeData>() ?? PulseThemeScope.current;
 }
 
-/// Typed Pulse design tokens carried as a [ThemeExtension].
+/// Typed DiagnoseThat design tokens carried as a [ThemeExtension].
 ///
-/// Pulse Dark and Pulse Light are first-class palettes — Light is never a
-/// simple inversion of Dark. Prefer semantic getters ([background], [card],
-/// [primaryText], …) for new code; legacy field names remain supported.
+/// DiagnoseThat Dark and DiagnoseThat Light are first-class palettes — Light
+/// is never a simple inversion of Dark. Prefer semantic getters
+/// ([background], [card], [primaryText], …) for new code; legacy field
+/// names remain supported.
 class PulseThemeData extends ThemeExtension<PulseThemeData> {
   const PulseThemeData({
     required this.brightness,
@@ -232,7 +233,7 @@ class PulseThemeData extends ThemeExtension<PulseThemeData> {
   static const double pagePadTop = 20;
   static const double pagePadBottom = 40;
 
-  /// Pulse Midnight (ADR-012) — near-black canvas, flat panels, hairline
+  /// DiagnoseThat Midnight (ADR-012) — near-black canvas, flat panels, hairline
   /// borders. Information severity is blue so the accent never reads as a
   /// severity level.
   factory PulseThemeData.dark({Color accent = defaultAccent}) {
@@ -298,7 +299,7 @@ class PulseThemeData extends ThemeExtension<PulseThemeData> {
     );
   }
 
-  /// Pulse Midnight light — neutral zinc surfaces with a darkened accent so
+  /// DiagnoseThat Midnight light — neutral zinc surfaces with a darkened accent so
   /// accent text and fills keep contrast on pale backgrounds.
   factory PulseThemeData.light({Color accent = defaultAccent}) {
     final lightAccent = _lightAccent(accent);

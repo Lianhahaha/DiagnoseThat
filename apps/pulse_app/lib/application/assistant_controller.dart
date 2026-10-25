@@ -13,7 +13,7 @@ import '../ipc/pulse_ipc_client.dart';
 import '../platform/local_ai_token_store.dart';
 import 'settings_controller.dart';
 
-/// Session-scoped Pulse Assistant state (local LLM chat + read-only tools).
+/// Session-scoped DiagnoseThat Assistant state (local LLM chat + read-only tools).
 class AssistantController extends ChangeNotifier {
   AssistantController({
     LocalAiProviderRegistry? registry,
@@ -140,7 +140,7 @@ class AssistantController extends ChangeNotifier {
   bool get hasModelSelection => selectedModel != null;
 
   /// What each runtime reported, e.g. "Ollama is not running on
-  /// 127.0.0.1:11434", so the empty state says where Pulse looked.
+  /// 127.0.0.1:11434", so the empty state says where DiagnoseThat looked.
   List<String> get providerStatusLines => [
         for (final p in _registry.providers)
           ?_snapshot.statusFor(p.id)?.detail,

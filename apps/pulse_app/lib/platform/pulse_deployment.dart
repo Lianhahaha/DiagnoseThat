@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
 
-/// Deployment flavor for Pulse UI vs Windows service lifecycle.
+/// Deployment flavor for DiagnoseThat UI vs Windows service lifecycle.
 ///
 /// Store / MSIX detection uses [GetCurrentPackageFullName], not install paths.
 abstract class PulseDeployment {

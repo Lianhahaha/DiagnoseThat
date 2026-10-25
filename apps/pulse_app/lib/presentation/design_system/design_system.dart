@@ -1,4 +1,4 @@
-/// Pulse design-system building blocks for the UX redesign.
+/// DiagnoseThat design-system building blocks for the UX redesign.
 library;
 
 export '../components/pulse_badge.dart';

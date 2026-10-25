@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-/// Descriptor for a read-only Pulse diagnostic tool the Assistant may call.
+/// Descriptor for a read-only DiagnoseThat diagnostic tool the Assistant may call.
 ///
 /// Tools must never mutate Windows, inject into processes, or bypass security.
 class AssistantToolDescriptor {
@@ -17,7 +17,7 @@ class AssistantToolDescriptor {
   final String name;
   final String description;
 
-  /// Always true for Pulse Assistant v1 — observation only.
+  /// Always true for DiagnoseThat Assistant v1 — observation only.
   final bool readOnly;
 
   /// JSON Schema object for tool arguments (OpenAI / Ollama tools format).
@@ -59,9 +59,9 @@ class AssistantToolResult {
   }
 }
 
-/// Abstraction for Assistant → Pulse diagnostics.
+/// Abstraction for Assistant → DiagnoseThat diagnostics.
 ///
-/// Implementations must use read-only Pulse APIs / IPC only.
+/// Implementations must use read-only DiagnoseThat APIs / IPC only.
 abstract class AssistantToolLayer {
   List<AssistantToolDescriptor> listTools();
 
