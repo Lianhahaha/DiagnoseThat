@@ -25,6 +25,7 @@ import '../components/pulse_badge.dart';
 import '../components/pulse_button.dart';
 import '../components/pulse_card.dart';
 import '../components/pulse_section_header.dart';
+import '../shell/shortcuts_dialog.dart';
 import '../utils/pulse_snack.dart';
 import '../utils/pulse_user_errors.dart';
 import 'settings_category.dart';
@@ -1091,6 +1092,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     if (context.mounted) {
                       _snack(context, 'Release URL copied');
                     }
+                  },
+                ),
+              ),
+              const SoftDivider(indent: 52),
+              _SettingsRow(
+                icon: LucideIcons.keyboard,
+                title: 'Keyboard shortcuts',
+                subtitle: 'Every shell shortcut in one list',
+                trailing: PulseButton(
+                  label: 'Show',
+                  icon: LucideIcons.keyboard,
+                  variant: PulseButtonVariant.secondary,
+                  onPressed: () async {
+                    await showShortcutsDialog(context);
                   },
                 ),
               ),
