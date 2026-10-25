@@ -21,14 +21,18 @@ class AppLogFile {
   String? _openDay;
   bool _disabled = false;
 
-  /// Default location, or null when %LOCALAPPDATA% is unavailable.
-  static AppLogFile? openDefault() {
+  /// Default log folder, or null when %LOCALAPPDATA% is unavailable.
+  static Directory? get defaultDirectory {
     final localAppData = Platform.environment['LOCALAPPDATA'];
     if (localAppData == null || localAppData.isEmpty) return null;
     final sep = Platform.pathSeparator;
-    final dir = Directory(
-      [localAppData, 'DiagnoseThat', 'logs', 'app'].join(sep),
-    );
+    return Directory([localAppData, 'DiagnoseThat', 'logs', 'app'].join(sep));
+  }
+
+  /// Default location, or null when %LOCALAPPDATA% is unavailable.
+  static AppLogFile? openDefault() {
+    final dir = defaultDirectory;
+    if (dir == null) return null;
     return AppLogFile(dir)..pruneOldFiles();
   }
 

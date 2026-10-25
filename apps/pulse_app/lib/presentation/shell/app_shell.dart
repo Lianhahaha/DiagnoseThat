@@ -16,6 +16,8 @@ import '../../application/shell_navigation.dart';
 import '../../application/timeline_session_controller.dart';
 import '../../application/update_check_controller.dart';
 import '../../ipc/pulse_ipc_client.dart';
+import '../../logging/app_log_file.dart';
+import '../../platform/folder_opener.dart';
 import '../../platform/pulse_service_scm.dart';
 import '../assistant/assistant_host.dart';
 import '../assistant/assistant_page.dart';
@@ -291,6 +293,21 @@ class _AppShellState extends State<AppShell> {
       }
     }
 
+    Future<void> openLogsFolder() async {
+      try {
+        final dir = AppLogFile.defaultDirectory;
+        if (dir == null) {
+          if (!mounted) return;
+          PulseSnack.error(context, 'Log folder is unavailable');
+          return;
+        }
+        await openDirectory(dir);
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Failed: $e');
+      }
+    }
+
     final serviceStateLabel = switch (service.state) {
       PulseServiceScmState.running => 'Running',
       PulseServiceScmState.stopped => 'Stopped',
@@ -462,6 +479,16 @@ class _AppShellState extends State<AppShell> {
         keywords: const ['logs', 'log', 'export', 'troubleshooting'],
         onInvoke: () {
           unawaited(exportLogs());
+        },
+      ),
+      PulseCommand(
+        id: 'logs.open',
+        title: 'Open logs folder',
+        subtitle: 'Show app logs in Explorer',
+        icon: LucideIcons.folderOpen,
+        keywords: const ['logs', 'log', 'folder', 'explorer', 'open'],
+        onInvoke: () {
+          unawaited(openLogsFolder());
         },
       ),
       PulseCommand(
