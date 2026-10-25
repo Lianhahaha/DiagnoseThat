@@ -14,6 +14,7 @@ import '../../application/service_lifecycle_controller.dart';
 import '../../application/settings_controller.dart';
 import '../../application/shell_navigation.dart';
 import '../../application/timeline_session_controller.dart';
+import '../../application/update_check_controller.dart';
 import '../../ipc/pulse_ipc_client.dart';
 import '../../platform/pulse_service_scm.dart';
 import '../assistant/assistant_host.dart';
@@ -210,6 +211,7 @@ class _AppShellState extends State<AppShell> {
     final settings = context.read<SettingsController>();
     final healthNav = context.read<HealthNavigation>();
     final service = context.read<ServiceLifecycleController>();
+    final diag = context.read<DiagnosticsController>();
 
     void go(int page) => _selectPage(page);
 
@@ -240,6 +242,52 @@ class _AppShellState extends State<AppShell> {
       } catch (e) {
         if (!mounted) return;
         PulseSnack.error(context, PulseUserErrors.fromObject(e));
+      }
+    }
+
+    Future<void> checkForUpdates() async {
+      final updates = context.read<UpdateCheckController>();
+      try {
+        await updates.check();
+        if (!mounted) return;
+        if (updates.status == UpdateCheckStatus.available) {
+          final latest = updates.latest;
+          PulseSnack.success(
+            context,
+            latest == null
+                ? 'A newer version is available'
+                : 'Update ${latest.version} is available',
+          );
+        } else if (updates.status == UpdateCheckStatus.upToDate) {
+          PulseSnack.success(context, 'DiagnoseThat is up to date');
+        } else if (updates.status == UpdateCheckStatus.failed) {
+          PulseSnack.error(context, updates.error ?? 'Update check failed');
+        }
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Failed: $e');
+      }
+    }
+
+    Future<void> exportDiagnostics() async {
+      try {
+        final saved = await diag.exportReport();
+        if (!mounted) return;
+        PulseSnack.success(context, saved.summary);
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Failed: $e');
+      }
+    }
+
+    Future<void> exportLogs() async {
+      try {
+        final saved = await diag.exportLogsOnly();
+        if (!mounted) return;
+        PulseSnack.success(context, saved.summary);
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Failed: $e');
       }
     }
 
@@ -387,6 +435,36 @@ class _AppShellState extends State<AppShell> {
         },
       ),
       PulseCommand(
+        id: 'updates.check',
+        title: 'Check for updates',
+        subtitle: 'Look for a newer release on GitHub',
+        icon: LucideIcons.circleArrowUp,
+        keywords: const ['update', 'version', 'upgrade', 'release'],
+        onInvoke: () {
+          unawaited(checkForUpdates());
+        },
+      ),
+      PulseCommand(
+        id: 'diagnostics.export',
+        title: 'Export diagnostic report',
+        subtitle: 'Save a snapshot for troubleshooting',
+        icon: LucideIcons.save,
+        keywords: const ['diagnostics', 'export', 'report', 'snapshot'],
+        onInvoke: () {
+          unawaited(exportDiagnostics());
+        },
+      ),
+      PulseCommand(
+        id: 'logs.export',
+        title: 'Export logs',
+        subtitle: 'Save the recent app log file',
+        icon: LucideIcons.arrowDownToLine,
+        keywords: const ['logs', 'log', 'export', 'troubleshooting'],
+        onInvoke: () {
+          unawaited(exportLogs());
+        },
+      ),
+      PulseCommand(
         id: 'service.start',
         title: 'Start PulseService',
         subtitle: 'Service status: $serviceStateLabel',
@@ -414,6 +492,16 @@ class _AppShellState extends State<AppShell> {
         keywords: const ['service', 'pulse service', 'restart', 'reload'],
         onInvoke: () {
           unawaited(runService(service.restartService));
+        },
+      ),
+      PulseCommand(
+        id: 'service.repair',
+        title: 'Repair or install PulseService',
+        subtitle: 'Service status: $serviceStateLabel',
+        icon: LucideIcons.wrench,
+        keywords: const ['service', 'repair', 'install', 'fix', 'missing'],
+        onInvoke: () {
+          unawaited(runService(service.repairInstall));
         },
       ),
       PulseCommand(
