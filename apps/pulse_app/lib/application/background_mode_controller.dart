@@ -256,6 +256,10 @@ class BackgroundModeController extends ChangeNotifier
         MenuItem(key: 'storage', label: 'Storage'),
         MenuItem(key: 'network', label: 'Network'),
         MenuItem(key: 'events', label: 'Event Logs'),
+        MenuItem(key: 'inventory', label: 'Inventory'),
+        MenuItem(key: 'reports', label: 'Reports'),
+        MenuItem(key: 'diagnostics', label: 'Diagnostics'),
+        MenuItem(key: 'assistant', label: 'Assistant'),
         MenuItem(key: 'settings', label: 'Settings'),
         MenuItem.separator(),
         MenuItem.checkbox(
@@ -382,6 +386,18 @@ class BackgroundModeController extends ChangeNotifier
       case 'events':
         await showMainWindow();
         shellNavigation.open(PulseNavTarget.eventLogs);
+      case 'inventory':
+        await showMainWindow();
+        shellNavigation.open(PulseNavTarget.inventory);
+      case 'reports':
+        await showMainWindow();
+        shellNavigation.open(PulseNavTarget.reports);
+      case 'diagnostics':
+        await showMainWindow();
+        shellNavigation.open(PulseNavTarget.diagnostics);
+      case 'assistant':
+        await showMainWindow();
+        shellNavigation.open(PulseNavTarget.assistant);
       case 'settings':
         await showMainWindow();
         shellNavigation.open(PulseNavTarget.settings);

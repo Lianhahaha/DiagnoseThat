@@ -51,6 +51,26 @@ class ShellNavigation extends ChangeNotifier {
         _pendingHealthPanel = null;
         _clearHealthPanel = false;
         _pendingSettingsCategory = null;
+      case PulseNavTarget.inventory:
+        _pendingShellPage = PulseShellPages.inventory;
+        _pendingHealthPanel = null;
+        _clearHealthPanel = false;
+        _pendingSettingsCategory = null;
+      case PulseNavTarget.reports:
+        _pendingShellPage = PulseShellPages.reports;
+        _pendingHealthPanel = null;
+        _clearHealthPanel = false;
+        _pendingSettingsCategory = null;
+      case PulseNavTarget.diagnostics:
+        _pendingShellPage = PulseShellPages.diagnostics;
+        _pendingHealthPanel = null;
+        _clearHealthPanel = false;
+        _pendingSettingsCategory = null;
+      case PulseNavTarget.assistant:
+        _pendingShellPage = PulseShellPages.assistant;
+        _pendingHealthPanel = null;
+        _clearHealthPanel = false;
+        _pendingSettingsCategory = null;
       case PulseNavTarget.settings:
         _pendingShellPage = PulseShellPages.settings;
         _pendingHealthPanel = null;
@@ -107,5 +127,9 @@ enum PulseNavTarget {
   storage,
   network,
   eventLogs,
+  inventory,
+  reports,
+  diagnostics,
+  assistant,
   settings,
 }
