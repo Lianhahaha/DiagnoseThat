@@ -10,10 +10,12 @@ import '../../app/theme/pulse_theme.dart';
 import '../../app/theme/pulse_window_chrome.dart';
 import '../../application/diagnostics_controller.dart';
 import '../../application/health_navigation.dart';
+import '../../application/service_lifecycle_controller.dart';
 import '../../application/settings_controller.dart';
 import '../../application/shell_navigation.dart';
 import '../../application/timeline_session_controller.dart';
 import '../../ipc/pulse_ipc_client.dart';
+import '../../platform/pulse_service_scm.dart';
 import '../assistant/assistant_host.dart';
 import '../assistant/assistant_page.dart';
 import '../components/pulse_content_frame.dart';
@@ -29,6 +31,7 @@ import '../settings/settings_category.dart';
 import '../settings/settings_page.dart';
 import '../timeline/timeline_page.dart';
 import '../utils/pulse_snack.dart';
+import '../utils/pulse_user_errors.dart';
 import 'command_palette.dart';
 
 /// Sidebar / shell page indices.
@@ -205,6 +208,7 @@ class _AppShellState extends State<AppShell> {
   List<PulseCommand> _buildCommands() {
     final settings = context.read<SettingsController>();
     final healthNav = context.read<HealthNavigation>();
+    final service = context.read<ServiceLifecycleController>();
 
     void go(int page) => _selectPage(page);
 
@@ -223,6 +227,29 @@ class _AppShellState extends State<AppShell> {
         PulseSnack.error(context, 'Failed: $e');
       }
     }
+
+    Future<void> runService(Future<void> Function() action) async {
+      try {
+        await action();
+        if (!mounted) return;
+        PulseSnack.success(
+          context,
+          service.lastSuccess ?? 'PulseService updated',
+        );
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, PulseUserErrors.fromObject(e));
+      }
+    }
+
+    final serviceStateLabel = switch (service.state) {
+      PulseServiceScmState.running => 'Running',
+      PulseServiceScmState.stopped => 'Stopped',
+      PulseServiceScmState.startPending => 'Starting…',
+      PulseServiceScmState.stopPending => 'Stopping…',
+      PulseServiceScmState.notInstalled => 'Not installed',
+      PulseServiceScmState.unknown => 'Status unknown',
+    };
 
     return [
       PulseCommand(
@@ -350,6 +377,36 @@ class _AppShellState extends State<AppShell> {
         keywords: const ['backup', 'json'],
         onInvoke: () {
           exportSettings();
+        },
+      ),
+      PulseCommand(
+        id: 'service.start',
+        title: 'Start PulseService',
+        subtitle: 'Service status: $serviceStateLabel',
+        icon: LucideIcons.play,
+        keywords: const ['service', 'pulse service', 'start', 'run'],
+        onInvoke: () {
+          unawaited(runService(service.startService));
+        },
+      ),
+      PulseCommand(
+        id: 'service.stop',
+        title: 'Stop PulseService',
+        subtitle: 'Service status: $serviceStateLabel',
+        icon: LucideIcons.square,
+        keywords: const ['service', 'pulse service', 'stop', 'halt'],
+        onInvoke: () {
+          unawaited(runService(service.stopService));
+        },
+      ),
+      PulseCommand(
+        id: 'service.restart',
+        title: 'Restart PulseService',
+        subtitle: 'Service status: $serviceStateLabel',
+        icon: LucideIcons.refreshCw,
+        keywords: const ['service', 'pulse service', 'restart', 'reload'],
+        onInvoke: () {
+          unawaited(runService(service.restartService));
         },
       ),
       PulseCommand(
