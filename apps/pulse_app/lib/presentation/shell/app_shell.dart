@@ -97,7 +97,7 @@ class _AppShellState extends State<AppShell> {
       tooltip: 'Reports (Ctrl+4)',
     ),
     PulseNavItem(
-      label: 'Diagnose',
+      label: 'Diagnostics',
       icon: LucideIcons.stethoscope,
       pageIndex: PulseShellPages.diagnostics,
       tooltip: 'Diagnostics (Ctrl+5)',
@@ -256,6 +256,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.timeline',
         title: 'Go to Timeline',
+        subtitle: 'Ctrl+1',
         icon: LucideIcons.listTree,
         keywords: const ['navigate', 'page'],
         onInvoke: () => go(PulseShellPages.timeline),
@@ -263,6 +264,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.health',
         title: 'Go to System Health',
+        subtitle: 'Ctrl+2',
         icon: LucideIcons.heartPulse,
         keywords: const ['navigate', 'page', 'health'],
         onInvoke: () => go(PulseShellPages.health),
@@ -270,6 +272,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.inventory',
         title: 'Go to Inventory',
+        subtitle: 'Ctrl+3',
         icon: LucideIcons.packageSearch,
         keywords: const ['navigate', 'page', 'services', 'drivers', 'software'],
         onInvoke: () => go(PulseShellPages.inventory),
@@ -277,6 +280,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.reports',
         title: 'Go to Reports',
+        subtitle: 'Ctrl+4',
         icon: LucideIcons.fileText,
         keywords: const ['navigate', 'page', 'export'],
         onInvoke: () => go(PulseShellPages.reports),
@@ -284,6 +288,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.diagnostics',
         title: 'Go to Diagnostics',
+        subtitle: 'Ctrl+5',
         icon: LucideIcons.activity,
         keywords: const ['navigate', 'page'],
         onInvoke: () => go(PulseShellPages.diagnostics),
@@ -291,6 +296,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.settings',
         title: 'Go to Settings',
+        subtitle: 'Ctrl+6',
         icon: LucideIcons.settings,
         keywords: const ['navigate', 'page', 'preferences'],
         onInvoke: () => go(PulseShellPages.settings),
@@ -314,7 +320,7 @@ class _AppShellState extends State<AppShell> {
       PulseCommand(
         id: 'nav.assistant',
         title: 'Go to Assistant',
-        subtitle: 'Local AI diagnostics chat',
+        subtitle: 'Local AI diagnostics chat · Ctrl+7',
         icon: LucideIcons.bot,
         keywords: const ['assistant', 'ai', 'chat', 'ollama', 'lm studio'],
         onInvoke: () => go(PulseShellPages.assistant),
