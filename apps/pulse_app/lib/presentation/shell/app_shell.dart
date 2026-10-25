@@ -25,6 +25,7 @@ import '../health/health_view_models.dart';
 import '../health/system_health_page.dart';
 import '../inventory/inventory_page.dart';
 import '../reports/reports_page.dart';
+import '../settings/settings_category.dart';
 import '../settings/settings_page.dart';
 import '../timeline/timeline_page.dart';
 import '../utils/pulse_snack.dart';
@@ -266,6 +267,22 @@ class _AppShellState extends State<AppShell> {
         keywords: const ['navigate', 'page', 'preferences'],
         onInvoke: () => go(PulseShellPages.settings),
       ),
+      for (final category in SettingsCategoryId.values)
+        PulseCommand(
+          id: 'settings.${category.name}',
+          title: 'Settings · ${category.label}',
+          subtitle: 'Open the ${category.label} section',
+          icon: category.icon,
+          keywords: [
+            'settings',
+            'preferences',
+            category.label.toLowerCase(),
+            category.name,
+          ],
+          onInvoke: () {
+            context.read<ShellNavigation>().openSettingsCategory(category);
+          },
+        ),
       PulseCommand(
         id: 'nav.assistant',
         title: 'Go to Assistant',

@@ -60,6 +60,14 @@ class ShellNavigation extends ChangeNotifier {
     notifyListeners();
   }
 
+  void openSettingsCategory(SettingsCategoryId category) {
+    _pendingShellPage = PulseShellPages.settings;
+    _pendingHealthPanel = null;
+    _clearHealthPanel = false;
+    _pendingSettingsCategory = category;
+    notifyListeners();
+  }
+
   void openForAlert(AlertKind kind) {
     switch (kind) {
       case AlertKind.cpu:
