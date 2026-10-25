@@ -1,6 +1,6 @@
-# Pulse Brand Identity
+# DiagnoseThat Brand Identity
 
-**Product:** Pulse  
+**Product:** DiagnoseThat  
 **Company:** Regn Creative  
 **Document version:** 1.0  
 **Date:** 2026-07-27
@@ -11,7 +11,7 @@
 
 **Name:** Telemetry Peak
 
-Pulse’s mark is a precise activity spike on a calibrated baseline, with a sample node at the apex.
+DiagnoseThat’s mark is a precise activity spike on a calibrated baseline, with a sample node at the apex.
 
 It communicates:
 
@@ -125,11 +125,11 @@ python tools/scripts/generate_brand_icons.py
 
 | Field | Value |
 |---|---|
-| Window title | Pulse |
-| Product name | Pulse |
+| Window title | DiagnoseThat |
+| Product name | DiagnoseThat |
 | Company | Regn Creative |
 | File description | Windows Diagnostics |
-| Executable | `Pulse.exe` |
+| Executable | `DiagnoseThat.exe` |
 | Copyright | Copyright (C) 2026 Regn Creative. All rights reserved. |
 
-The desktop shell uses a custom title bar blended with Pulse chrome, dark-mode DWM styling, Windows 11 rounded corners, and Mica/Acrylic when the OS supports it.
+The desktop shell uses a custom title bar blended with DiagnoseThat chrome, dark-mode DWM styling, Windows 11 rounded corners, and Mica/Acrylic when the OS supports it.

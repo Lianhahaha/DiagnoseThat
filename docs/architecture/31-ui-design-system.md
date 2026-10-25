@@ -1,14 +1,14 @@
 # 31 — UI design system (Phase A)
 
-Status: Implemented foundation for the Pulse UX redesign.
+Status: Implemented foundation for the DiagnoseThat UX redesign.
 
 ## Purpose
 
-Give Pulse a typed, themeable design system so light/dark modes and accent colors work without rewriting hundreds of call sites.
+Give DiagnoseThat a typed, themeable design system so light/dark modes and accent colors work without rewriting hundreds of call sites.
 
 ## ThemeExtension: `PulseThemeData`
 
-Pulse carries design tokens as a Flutter [`ThemeExtension`](https://api.flutter.dev/flutter/material/ThemeExtension-class.html):
+DiagnoseThat carries design tokens as a Flutter [`ThemeExtension`](https://api.flutter.dev/flutter/material/ThemeExtension-class.html):
 
 - Surfaces, strokes, text, accent*, semantic, and severity colors
 - Radii and spacing as doubles

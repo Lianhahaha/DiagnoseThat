@@ -4,7 +4,7 @@
 
 **Primary and only Timeline data source:** Windows Event Log via Wevtapi (ADR-007).
 
-This is the spine of Pulse Timeline. Health may use ETW separately (ADR-009); Timeline does not ingest ETW.
+This is the spine of DiagnoseThat Timeline. Health may use ETW separately (ADR-009); Timeline does not ingest ETW.
 
 References:
 
@@ -16,7 +16,7 @@ References:
 
 ## Diagnostics channels (Phase 4)
 
-Pulse attempts the following channels under the service account (typically LocalService). Optional channels are skipped when missing or access-denied; other channels continue.
+DiagnoseThat attempts the following channels under the service account (typically LocalService). Optional channels are skipped when missing or access-denied; other channels continue.
 
 | Channel | Kind | Notes under LocalService |
 |---------|------|---------------------------|

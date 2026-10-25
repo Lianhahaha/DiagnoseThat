@@ -1,6 +1,6 @@
 # AGENTS.md
 
-# Pulse
+# DiagnoseThat
 
 > See what Windows is really doing.
 
@@ -8,17 +8,17 @@
 
 # Vision
 
-Pulse is a professional Windows diagnostics platform.
+DiagnoseThat is a professional Windows diagnostics platform.
 
 Its purpose is to make Windows internals understandable.
 
-Pulse observes.
+DiagnoseThat observes.
 
-Pulse explains.
+DiagnoseThat explains.
 
-Pulse visualizes.
+DiagnoseThat visualizes.
 
-Pulse never changes Windows.
+DiagnoseThat never changes Windows.
 
 ---
 
@@ -26,7 +26,7 @@ Pulse never changes Windows.
 
 Create the best modern Windows observability platform.
 
-Pulse should become the modern replacement for multiple Windows diagnostic tools.
+DiagnoseThat should become the modern replacement for multiple Windows diagnostic tools.
 
 Including but not limited to:
 
@@ -36,7 +36,7 @@ Including but not limited to:
 - Performance Monitor
 - ETW viewers
 
-Pulse combines these into one consistent experience.
+DiagnoseThat combines these into one consistent experience.
 
 ---
 
@@ -44,7 +44,7 @@ Pulse combines these into one consistent experience.
 
 Windows already knows everything.
 
-Pulse simply reveals it.
+DiagnoseThat simply reveals it.
 
 Everything must remain read-only.
 
@@ -106,7 +106,7 @@ Windows restarted Explorer.
 
 # Product Scope
 
-Pulse can display
+DiagnoseThat can display
 
 - Event Logs
 - ETW
@@ -133,9 +133,9 @@ Future
 
 ---
 
-# What Pulse is NOT
+# What DiagnoseThat is NOT
 
-Pulse is NOT
+DiagnoseThat is NOT
 
 - Antivirus
 - Cleaner
@@ -480,7 +480,7 @@ Diagnostics Engine
 
 # Long-Term Vision
 
-Pulse should become the most modern Windows observability platform.
+DiagnoseThat should become the most modern Windows observability platform.
 
 A tool that lets users understand Windows through beautiful, readable, real-time diagnostics.
 
@@ -492,7 +492,7 @@ Every feature should answer one question:
 
 # Architecture
 
-Pulse technical architecture is documented in [docs/architecture/README.md](docs/architecture/README.md).
+DiagnoseThat technical architecture is documented in [docs/architecture/README.md](docs/architecture/README.md).
 
 **v1 scope:** Windows Event Log → Collector → IPC → Timeline → human-readable events only. ETW, WMI, and plugins are future milestones.
 

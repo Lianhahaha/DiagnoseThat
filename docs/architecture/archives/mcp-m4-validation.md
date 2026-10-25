@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.4.0`  
-**Pulse app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
 **Scope:** M4 — `timeline.list`, `timeline.search`, `pulse://timeline/live`  
 **Status:** **FROZEN** — all required gates PASS. M5 blocked until explicit start.
 

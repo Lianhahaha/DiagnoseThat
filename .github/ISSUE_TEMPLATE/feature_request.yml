@@ -1,12 +1,12 @@
 name: Feature Request
-description: Propose a new capability for Pulse
+description: Propose a new capability for DiagnoseThat
 title: "[Feature]: "
 labels: ["enhancement", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Pulse is a **read-only** Windows observability platform.
+        DiagnoseThat is a **read-only** Windows observability platform.
         Features that modify, clean, optimize, or inject into Windows will be closed.
 
   - type: textarea
@@ -22,7 +22,7 @@ body:
     id: proposal
     attributes:
       label: Proposed solution
-      description: What should Pulse do?
+      description: What should DiagnoseThat do?
       placeholder: Add a provider filter chip and persist the last selection locally.
     validations:
       required: true

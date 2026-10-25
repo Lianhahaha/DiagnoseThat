@@ -10,16 +10,16 @@
 
 ## Context
 
-Pulse has two AI features:
+DiagnoseThat has two AI features:
 
 | Feature | What it does | Runtime |
 |---------|--------------|---------|
-| **Assistant** | In-app chat with a local model (Ollama / LM Studio), localhost only | Dart, inside `Pulse.exe` |
-| **AI Integration (PulseMCP)** | MCP server so external clients (Claude Desktop, Cursor, VS Code, Windsurf, Cline) can query Pulse diagnostics | Node.js, shipped as a private runtime |
+| **Assistant** | In-app chat with a local model (Ollama / LM Studio), localhost only | Dart, inside `DiagnoseThat.exe` |
+| **AI Integration (PulseMCP)** | MCP server so external clients (Claude Desktop, Cursor, VS Code, Windsurf, Cline) can query DiagnoseThat diagnostics | Node.js, shipped as a private runtime |
 
 PulseMCP accounted for about **100 MB** of the ~150 MB install (Node runtime 68 MB, server and dependencies 34 MB) and for a large share of packaging, CI and support work: a second IPC client, a status daemon, client registration in third-party config files, and recurring bugs (pipe-slot leaks, daemon lifecycle, path quoting).
 
-The product owner decided that the local Assistant is the AI story for Pulse, and that the MCP bridge does not justify its size and maintenance cost.
+The product owner decided that the local Assistant is the AI story for DiagnoseThat, and that the MCP bridge does not justify its size and maintenance cost.
 
 ## Decision
 
@@ -28,7 +28,7 @@ The product owner decided that the local Assistant is the AI story for Pulse, an
 3. Keep the **Assistant** unchanged. Its status tool is renamed `mcp_self` → `pulse_status`.
 4. Migrate existing installs cleanly:
    - **Setup (classic):** closes running PulseMCP processes (Restart Manager via `RegisterExtraCloseApplicationsResource`) and deletes `PulseMCP.exe`, `PulseMCP.cmd`, `runtime\` and `mcp\`.
-   - **App, first launch (classic and Store):** `LegacyMcpCleanup` removes the `pulse` server entries Pulse added to AI client configs — only entries recorded as `registeredByPulse` in `%LOCALAPPDATA%\Pulse\mcp\client-registrations.json`, after backing up each file — then deletes `%LOCALAPPDATA%\Pulse\mcp` and `logs\pulsemcp`.
+   - **App, first launch (classic and Store):** `LegacyMcpCleanup` removes the `pulse` server entries DiagnoseThat added to AI client configs — only entries recorded as `registeredByPulse` in `%LOCALAPPDATA%\Pulse\mcp\client-registrations.json`, after backing up each file — then deletes `%LOCALAPPDATA%\Pulse\mcp` and `logs\pulsemcp`.
    - **Store build:** strips any stale PulseMCP files from the MSIX staging folder.
 
 ## Consequences
@@ -37,11 +37,11 @@ The product owner decided that the local Assistant is the AI story for Pulse, an
 
 - Install size drops by ~100 MB (classic) and the Store package shrinks accordingly.
 - One IPC client (the app) instead of three kinds; fewer moving parts in packaging and CI.
-- No third-party config files are written by Pulse any more.
+- No third-party config files are written by DiagnoseThat any more.
 
 **Negative**
 
-- Users of Claude Desktop, Cursor, VS Code, Windsurf or Cline lose the Pulse tools in those apps. The local Assistant remains.
+- Users of Claude Desktop, Cursor, VS Code, Windsurf or Cline lose the DiagnoseThat tools in those apps. The local Assistant remains.
 - Reports first-class work (R4) can no longer reuse the PulseMCP TypeScript report writers; Reports stay on the Dart generators.
 
 **Neutral**

@@ -17,7 +17,7 @@ The frozen engineering roadmap keeps theme redesign out of scope until an ADR ch
 1. A faithful Windows 11 Fluent reskin (Mica, 4 px controls, Segoe UI Variable). Rejected: too close to the current UI.
 2. **Midnight**: a dark-first identity with a signature accent, pill controls, an icon rail, a story-style Timeline and a bento Overview. Approved.
 
-Mockups: the Pulse Redesign design canvas (Timeline, Overview, Inventory, Reports, Diagnose, Assistant, Settings).
+Mockups: the DiagnoseThat Redesign design canvas (Timeline, Overview, Inventory, Reports, Diagnose, Assistant, Settings).
 
 The constitution in [AGENTS.md](../../../AGENTS.md) is unchanged: read-only, local-first, human language first, Level 1 → 2 → 3 hierarchy.
 

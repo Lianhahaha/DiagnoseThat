@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.2.0`  
-**Pulse app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
 **Scope:** M2 — `system.*` tools + `pulse://system/*` resources/subscriptions  
 **Status:** **FROZEN** — all required gates PASS. M3 unblocked.
 
@@ -57,7 +57,7 @@ Headless CLI with `apps/pulse_mcp/scripts/mcp-inspector.m2.json` — **PASS** (`
 
 ## Cursor (required) — PASS
 
-Production client: Cursor Agent MCP server `project-0-Pulse-pulse` (`.cursor/mcp.json`).
+Production client: Cursor Agent MCP server `project-0-DiagnoseThat-pulse` (`.cursor/mcp.json`).
 
 | Check | Result | Evidence |
 |-------|--------|----------|

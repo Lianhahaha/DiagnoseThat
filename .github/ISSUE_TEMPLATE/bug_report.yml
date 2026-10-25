@@ -1,13 +1,13 @@
 name: Bug Report
-description: Report a bug or unexpected behavior in Pulse
+description: Report a bug or unexpected behavior in DiagnoseThat
 title: "[Bug]: "
 labels: ["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve Pulse. Please fill out the sections below.
-        Reminder: Pulse is **observation-only** — please do not request cleaner/optimizer features here.
+        Thanks for helping improve DiagnoseThat. Please fill out the sections below.
+        Reminder: DiagnoseThat is **observation-only** — please do not request cleaner/optimizer features here.
 
   - type: textarea
     id: summary
@@ -24,8 +24,8 @@ body:
       label: Steps to reproduce
       description: Exact steps another person can follow.
       placeholder: |
-        1. Install Pulse-Setup-…
-        2. Launch Pulse
+        1. Install DiagnoseThat-Setup-…
+        2. Launch DiagnoseThat
         3. …
       value: |
         1.
@@ -71,7 +71,7 @@ body:
   - type: input
     id: version
     attributes:
-      label: Pulse version
+      label: DiagnoseThat version
       description: From Settings, Diagnostics, or the installer filename (e.g. 0.1.0-beta.3).
       placeholder: 0.1.0-beta.3
     validations:

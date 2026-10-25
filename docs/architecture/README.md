@@ -1,6 +1,6 @@
-# Pulse v1 Architecture
+# DiagnoseThat v1 Architecture
 
-Professional architecture documentation for Pulse — a read-only Windows diagnostics platform.
+Professional architecture documentation for DiagnoseThat — a read-only Windows diagnostics platform.
 
 **Status:** Living architecture — product code in tree; remaining work follows frozen [34-engineering-roadmap.md](34-engineering-roadmap.md)
 
@@ -18,7 +18,7 @@ Priorities: **simplicity, responsiveness, maintainability** over feature count.
 
 ## What This Is
 
-This folder is the single source of truth for Pulse technical decisions. Every future implementation must align with these documents and the product constitution in [AGENTS.md](../../AGENTS.md).
+This folder is the single source of truth for DiagnoseThat technical decisions. Every future implementation must align with these documents and the product constitution in [AGENTS.md](../../AGENTS.md).
 
 Each feature should answer: **"What is Windows doing right now?"**
 

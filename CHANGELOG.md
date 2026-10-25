@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Pulse are documented in this file.
+All notable changes to DiagnoseThat are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -11,11 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - System Health lists every GPU (for example integrated + dedicated) with its load and memory; the Assistant and health reports include them (#9)
 - Timeline: "Hide events like this" hides an event type (provider + Event ID) from the list and its counts; a "hidden events" counter shows them on demand and Settings → Timeline → Hidden events brings them back. Reports and exports are unchanged (#25)
-- Starting Pulse while it runs brings the running window forward instead of opening a second one
+- Starting DiagnoseThat while it runs brings the running window forward instead of opening a second one
 
 ### Changed
 
-- GPU load is computed like Task Manager: each engine summed over its processes, the GPU showing its busiest engine. Pulse used the busiest single process, which read low when several shared an engine (#9)
+- GPU load is computed like Task Manager: each engine summed over its processes, the GPU showing its busiest engine. DiagnoseThat used the busiest single process, which read low when several shared an engine (#9)
 - A critical event of a hidden type raises no desktop notification (#25)
 
 ## [1.4.3] — 2026-10-18
@@ -27,11 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Pulse could crash in flutter_windows.dll when it closed (#32)
+- DiagnoseThat could crash in flutter_windows.dll when it closed (#32)
 - Resizable BAR showed "Not supported" although Windows offers no way to read it; it now shows *Unknown* (#31)
 - Assistant: Enter now sends the message; Shift+Enter adds a line
-- Uninstalling left a running Pulse in the tray and its files behind; the uninstaller now closes it first
-- Task Manager listed Pulse as "Windows Diagnostics"; it now shows *Pulse*
+- Uninstalling left a running DiagnoseThat in the tray and its files behind; the uninstaller now closes it first
+- Task Manager listed DiagnoseThat as "Windows Diagnostics"; it now shows *DiagnoseThat*
 - Disk health: "Power-On Hours" is now labelled *Power-on time*, matching its days-and-hours value
 
 ## [1.4.2] — 2026-10-18
@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Secure Boot update events explained** (TPM-WMI): applied updates are marked as routine, and errors such as the SBAT update failure (1796) say that Windows retries at the next restart. Follows Microsoft's Secure Boot DB and DBX update events article (#25)
 - **Deeper Assistant diagnostics** (#17): process details include command line, elevation, architecture, start time and total CPU time; processes can be ranked by private bytes; new read-only `windows_services` tool (for example "is Windows Search running?")
 - **Assistant ports and LM Studio API key** (Settings → Privacy → Assistant): change the Ollama or LM Studio port on this PC; the optional key is kept in Windows Credential Manager, never in settings, logs or exports (#21)
-- "Local AI not found" now lists what Pulse checked, e.g. *LM Studio server is not running on 127.0.0.1:1234. Start it in LM Studio → Developer.*
+- "Local AI not found" now lists what DiagnoseThat checked, e.g. *LM Studio server is not running on 127.0.0.1:1234. Start it in LM Studio → Developer.*
 
 ### Fixed
 
@@ -77,9 +77,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Product version stamped **1.4.0** across UI, PulseService, installer and MSIX
-- Exports go to **Downloads\Pulse** by default (Documents is blocked for unsigned apps by Controlled folder access)
+- Exports go to **Downloads\DiagnoseThat** by default (Documents is blocked for unsigned apps by Controlled folder access)
 - Default notification repeat interval 15 → 60 minutes; one toast per alert kind on screen
-- README: privacy first, comparison with Event Viewer / Reliability Monitor, how Pulse is built; new security guide
+- README: privacy first, comparison with Event Viewer / Reliability Monitor, how DiagnoseThat is built; new security guide
 - Packaging finds Visual Studio and the MSVC runtime with vswhere
 
 ### Fixed
@@ -93,22 +93,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- **AI Integration (PulseMCP)** — the MCP bridge for Claude Desktop, Cursor, VS Code, Windsurf and Cline, its private Node runtime (~100 MB), Settings → AI Integration and Diagnose → MCP ([ADR-013](docs/architecture/decisions/ADR-013-remove-pulsemcp.md)). The local Assistant (Ollama / LM Studio) stays. On first launch Pulse removes the client entries it had added (backed up first); Setup deletes the old files
+- **AI Integration (PulseMCP)** — the MCP bridge for Claude Desktop, Cursor, VS Code, Windsurf and Cline, its private Node runtime (~100 MB), Settings → AI Integration and Diagnose → MCP ([ADR-013](docs/architecture/decisions/ADR-013-remove-pulsemcp.md)). The local Assistant (Ollama / LM Studio) stays. On first launch DiagnoseThat removes the client entries it had added (backed up first); Setup deletes the old files
 
 ### Changed
 
 - Product version stamped **1.3.0** across UI, PulseService, installer and MSIX
-- Lime Midnight app icon for Pulse.exe, taskbar, tray and Store tile
-- Midnight-styled installer: dark wizard, lime Pulse mark
-- The app log is written to `%LOCALAPPDATA%\Pulse\logs\app\` (JSON lines, 14 days) and records uncaught errors
+- Lime Midnight app icon for DiagnoseThat.exe, taskbar, tray and Store tile
+- Midnight-styled installer: dark wizard, lime DiagnoseThat mark
+- The app log is written to `%LOCALAPPDATA%\DiagnoseThat\logs\app\` (JSON lines, 14 days) and records uncaught errors
 - Assistant status tool renamed `mcp_self` → `pulse_status`
-- The UAC prompt for Start / Stop / Restart service opens in front of Pulse; a cancelled prompt and a blocked request (error 5) now show different messages
+- The UAC prompt for Start / Stop / Restart service opens in front of DiagnoseThat; a cancelled prompt and a blocked request (error 5) now show different messages
 - Inventory state traces moved to debug logging
 - LICENSE is detected as MIT on GitHub; README documents the code signing policy
 
 ### Fixed
 
-- Pulse.exe could crash (`flutter_windows.dll`, 0xc0000005) after **Start / Stop / Restart service**: the UAC launch and wait ran on the UI thread
+- DiagnoseThat.exe could crash (`flutter_windows.dll`, 0xc0000005) after **Start / Stop / Restart service**: the UAC launch and wait ran on the UI thread
 - PulseService connections leaked until the service logged "pipe slots exhausted" and Diagnose → Connected clients kept climbing (PulseMCP handshake failures; Restart IPC Connection)
 - "Latest" badge went to a pinned event instead of the newest one
 - Setup left ~41 MB behind on upgrade (`PulseService.pdb`, `redist\VC_redist.x64.exe`) and an empty `redist` folder; the taskbar icon could stay blank after an icon change
@@ -136,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Upgrade notes
 
 - The accent preference is re-keyed: every install starts on the new lime accent once; pick another under Settings → Appearance
-- Install over 1.1.0 using `Pulse-Setup-1.2.0-windows-x64.exe`
+- Install over 1.1.0 using `DiagnoseThat-Setup-1.2.0-windows-x64.exe`
 - See [docs/releases/v1.2.0.md](docs/releases/v1.2.0.md) and [docs/guides/upgrade-notes.md](docs/guides/upgrade-notes.md)
 
 ## [1.1.0] — 2026-08-13
@@ -161,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade notes
 
-- Install over 1.0.0 using `Pulse-Setup-1.1.0-windows-x64.exe`
+- Install over 1.0.0 using `DiagnoseThat-Setup-1.1.0-windows-x64.exe`
 - Confirm Diagnostics → App / Service show **1.1.0**
 - If you use MCP: **Settings → AI Integration → Unregister → Register**
 - See [docs/releases/v1.1.0.md](docs/releases/v1.1.0.md) and [docs/guides/upgrade-notes.md](docs/guides/upgrade-notes.md)
@@ -170,7 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- First **stable** public release of Pulse for Windows 10/11
+- First **stable** public release of DiagnoseThat for Windows 10/11
 - Timeline with human-readable Event Log events, live monitoring, search, filters, and date presets
 - System Health (CPU, memory, GPU, disk, network) with live charts
 - Inventory (system, devices, software) via read-only Windows APIs
@@ -193,7 +193,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Upgrade notes
 
-- Install over a previous beta using `Pulse-Setup-1.0.0-windows-x64.exe`
+- Install over a previous beta using `DiagnoseThat-Setup-1.0.0-windows-x64.exe`
 - Re-register AI clients after upgrade: **Settings → AI Integration → Unregister → Register**
 - See [docs/releases/v1.0.0.md](docs/releases/v1.0.0.md) and [docs/guides/upgrade-notes.md](docs/guides/upgrade-notes.md)
 

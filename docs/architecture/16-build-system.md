@@ -9,7 +9,7 @@ VS 2022 + Windows SDK, CMake 3.25+, Flutter 3.x, protoc, vcpkg (protobuf, sqlite
 | Target | Notes |
 |--------|-------|
 | `PulseService.exe` | Link `wevtapi`, `advapi32`; **not** `tdh` / `mi` required for v1 |
-| `Pulse.exe` | Flutter Windows |
+| `DiagnoseThat.exe` | Flutter Windows |
 | `pulse_proto` | Generated C++/Dart |
 | Unit / integration tests | Google Test + Flutter test |
 

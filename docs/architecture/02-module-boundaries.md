@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Clear ownership and dependency rules for Pulse **v1** (Event Log only).
+Clear ownership and dependency rules for DiagnoseThat **v1** (Event Log only).
 
 ---
 
@@ -59,7 +59,7 @@ flowchart TB
 
 **Interface:** `ISourceAdapter` (kept for future ETW/WMI adapters — **not implemented** in v1).
 
-**Must not:** Talk to IPC, SQLite, or UI. Must not write to Windows (except Pulse bookmark files).
+**Must not:** Talk to IPC, SQLite, or UI. Must not write to Windows (except DiagnoseThat bookmark files).
 
 **v1 only adapter.** No `EtwAdapter`, `WmiAdapter` binaries or build targets in v1.
 

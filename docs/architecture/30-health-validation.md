@@ -4,11 +4,11 @@ Status: Phase 7 of the quality milestone ([29](29-system-health-quality-mileston
 
 ## Principle
 
-Compare Pulse to Windows Task Manager, Resource Monitor, Performance Monitor, and System Informer using the **same documented APIs** where possible. Never invent expected values. Acceptable delta: sample timing skew (~1 s) and rounding.
+Compare DiagnoseThat to Windows Task Manager, Resource Monitor, Performance Monitor, and System Informer using the **same documented APIs** where possible. Never invent expected values. Acceptable delta: sample timing skew (~1 s) and rounding.
 
 ## Reference matrix
 
-| Metric | Windows API (Pulse) | Compare with | Expected relationship |
+| Metric | Windows API (DiagnoseThat) | Compare with | Expected relationship |
 |--------|---------------------|--------------|------------------------|
 | CPU % (system) | PDH `% Processor Utility` | TM Performance | Within a few points |
 | Process CPU | SPI ΔKernel+User / Δt / N | SI time-based; TM Details | Same family as SI time-based |
@@ -28,11 +28,11 @@ Compare Pulse to Windows Task Manager, Resource Monitor, Performance Monitor, an
 
 ## Manual checklist
 
-1. Start PulseService (installed LocalService) + Pulse Release.
+1. Start PulseService (installed LocalService) + DiagnoseThat Release.
 2. Open System Health → CPU / Memory / GPU / Network / Disk / Hardware.
 3. Open Task Manager Performance (same GPU/NIC/volume where possible).
 4. Open Resource Monitor → Network / Memory.
-5. Open Performance Monitor → add the same PDH counters Pulse documents.
+5. Open Performance Monitor → add the same PDH counters DiagnoseThat documents.
 6. Optionally System Informer for process private WS and time-based CPU.
 7. Confirm Diagnostics shows service version, git commit, SHA256, ETW running or last error.
 8. Timeline: filter Crash / Power / Service; confirm human titles and export JSON.
@@ -41,7 +41,7 @@ Compare Pulse to Windows Task Manager, Resource Monitor, Performance Monitor, an
 
 | Difference | Why |
 |------------|-----|
-| Process CPU ≠ TM Processes Utility | Pulse defaults to time-based SPI (SI-style); TM Performance uses Utility |
+| Process CPU ≠ TM Processes Utility | DiagnoseThat defaults to time-based SPI (SI-style); TM Performance uses Utility |
 | Per-process net may be `—` | ETW session failed (logged); never ESTATS guesses |
 | Resizable BAR / GPU watts | No reliable public boolean / watt API without vendor SDK |
 | CPU package sensors | No public Win32 package-temp API |
@@ -49,7 +49,7 @@ Compare Pulse to Windows Task Manager, Resource Monitor, Performance Monitor, an
 
 ## Scripts
 
-- `scripts/validate_memory_metrics.ps1` — Memory Win32/PDH dump matching Pulse formulas
+- `scripts/validate_memory_metrics.ps1` — Memory Win32/PDH dump matching DiagnoseThat formulas
 
 ## Phase status
 

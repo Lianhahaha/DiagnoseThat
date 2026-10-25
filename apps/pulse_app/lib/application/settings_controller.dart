@@ -145,7 +145,7 @@ class SettingsController extends ChangeNotifier {
   /// contacts nothing unless the user turns this on or clicks Check.
   bool checkUpdatesAutomatically = false;
 
-  /// Empty = Downloads/Pulse default. Absolute path when set.
+  /// Empty = Downloads/DiagnoseThat default. Absolute path when set.
   String exportDirectory = '';
 
   /// Keep Pulse.exe alive in the system tray when the main window is closed.
@@ -898,7 +898,7 @@ class SettingsController extends ChangeNotifier {
   }
 
   /// Restores settings from the last export. Exports made before 1.4 were
-  /// written to Documents/Pulse; reading them is not blocked by Windows.
+  /// written to Documents/DiagnoseThat; reading them is not blocked by Windows.
   Future<void> importSettingsFromLastExport() async {
     final defaultPath = await defaultSettingsExportPath();
     final documents = await getApplicationDocumentsDirectory();

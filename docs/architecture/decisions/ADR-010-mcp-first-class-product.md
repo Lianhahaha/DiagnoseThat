@@ -10,16 +10,16 @@
 
 ## Context
 
-Pulse is a three-layer Windows observability platform:
+DiagnoseThat is a three-layer Windows observability platform:
 
 | Binary | Role today |
 |--------|------------|
-| `Pulse.exe` | Flutter UI |
+| `DiagnoseThat.exe` | Flutter UI |
 | `PulseService.exe` | Windows collectors + named-pipe IPC server |
 
-External AI assistants (Claude Desktop, Cursor, Windsurf, Cline, VS Code / GitHub Copilot, and other **local stdio** MCP clients) should consume Pulse diagnostics **without** embedding an LLM or vendor API keys inside Pulse. Remote HTTP MCP (e.g. ChatGPT connectors) is out of scope for the local stdio product.
+External AI assistants (Claude Desktop, Cursor, Windsurf, Cline, VS Code / GitHub Copilot, and other **local stdio** MCP clients) should consume DiagnoseThat diagnostics **without** embedding an LLM or vendor API keys inside DiagnoseThat. Remote HTTP MCP (e.g. ChatGPT connectors) is out of scope for the local stdio product.
 
-The [Model Context Protocol](https://modelcontextprotocol.io/specification/2025-11-25/) defines JSON-RPC over **stdio** and **Streamable HTTP**. Pulse must implement MCP **exactly** via an official SDK — no custom AI protocol.
+The [Model Context Protocol](https://modelcontextprotocol.io/specification/2025-11-25/) defines JSON-RPC over **stdio** and **Streamable HTTP**. DiagnoseThat must implement MCP **exactly** via an official SDK — no custom AI protocol.
 
 Additional product requirements (approved):
 
@@ -29,7 +29,7 @@ Additional product requirements (approved):
 4. MCP **Resources** + **subscriptions** for live health/timeline (avoid 1 Hz polling).
 5. Rich tool metadata (latency, permissions, schemas, filters, examples).
 6. Searchable timeline and filtered process list.
-7. Reports generated **by Pulse**, not by the model (`report.export`).
+7. Reports generated **by DiagnoseThat**, not by the model (`report.export`).
 8. In-app MCP Diagnostics section in Flutter.
 9. Permission levels; v1 = Observation only.
 10. Compatible with future Resources/Prompts/Sampling/HTTP/Auth without redesign.
@@ -41,7 +41,7 @@ Additional product requirements (approved):
 Introduce a third peer binary:
 
 ```
-Pulse.exe          — UI (Flutter)
+DiagnoseThat.exe          — UI (Flutter)
 PulseService.exe   — Collectors + IPC server (C++)
 PulseMCP.exe       — Official MCP server (TypeScript SDK → packaged EXE)
 ```
@@ -58,7 +58,7 @@ AI MCP client
     │  MCP JSON-RPC (stdio v1; Streamable HTTP optional later)
     ▼
 PulseMCP.exe
-    │  existing Pulse IPC (\\.\pipe\PulseService, PULS frames)
+    │  existing DiagnoseThat IPC (\\.\pipe\PulseService, PULS frames)
     ▼
 PulseService.exe
     │
@@ -75,7 +75,7 @@ Flutter connects to PulseMCP for **MCP Diagnostics UI** only (local status chann
 | Flutter ↔ PulseService | Named pipe + Protobuf | Unchanged; AGENTS.md “no HTTP” |
 | PulseMCP ↔ PulseService | Same named pipe + Protobuf | PulseMCP is another pipe client |
 | AI client ↔ PulseMCP | **Official MCP only** | stdio required; Streamable HTTP later |
-| Pulse ↔ cloud LLMs | **None** | No API keys; no embedded models |
+| DiagnoseThat ↔ cloud LLMs | **None** | No API keys; no embedded models |
 
 ### Placement alternatives (rejected)
 
@@ -100,7 +100,7 @@ PulseMCP must expose through `mcp.self`:
 
 - MCP **protocol** version (negotiated / supported)
 - **PulseMCP** server version
-- **Pulse** (UI/product) version stamp when known
+- **DiagnoseThat** (UI/product) version stamp when known
 - **PulseService** version (from IPC hello/pong)
 - **IPC** protocol version
 
@@ -132,7 +132,7 @@ Expose MCP **Resources** with subscription support for CPU, Memory, GPU, Network
 
 ### Reports
 
-`report.export` generates files on disk (JSON / HTML / PDF / Markdown / CSV) using Pulse-owned formatters fed by IPC snapshots. The tool returns paths and metadata — never asks the model to invent report content.
+`report.export` generates files on disk (JSON / HTML / PDF / Markdown / CSV) using DiagnoseThat-owned formatters fed by IPC snapshots. The tool returns paths and metadata — never asks the model to invent report content.
 
 ### IPC changes
 
@@ -147,13 +147,13 @@ Expose MCP **Resources** with subscription support for CPU, Memory, GPU, Network
 - Claude / Cursor / Windsurf / Cline / VS Code (Copilot Agent) work via local stdio MCP config.
 - Clear blast radius: MCP crashes do not take down collectors or UI.
 - Official SDK tracks MCP evolution (Resources, Prompts, Sampling, HTTP, Auth).
-- Aligns with AGENTS.md: observation only, local-first, no telemetry from Pulse itself.
+- Aligns with AGENTS.md: observation only, local-first, no telemetry from DiagnoseThat itself.
 
 ### Negative / costs
 
 - Third binary in installer and release matrix.
 - PulseMCP needs PulseService running; tools return structured `service_unavailable` errors otherwise.
-- Privacy: once a user enables MCP, the **AI host** may send tool/resource payloads to its cloud — Pulse must disclose this in Settings.
+- Privacy: once a user enables MCP, the **AI host** may send tool/resource payloads to its cloud — DiagnoseThat must disclose this in Settings.
 
 ### Follow-ups
 

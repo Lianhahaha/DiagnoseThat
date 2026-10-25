@@ -1,7 +1,7 @@
-# Pulse Diagnostics — Business Justification for `packagedServices`
+# DiagnoseThat — Business Justification for `packagedServices`
 
 **Audience:** Microsoft Store / Partner Center certification (restricted capability review)  
-**Product:** Pulse Diagnostics (`Regncreative.PulseDiagnostics`, Store ID `9PNDTLNTJ82T`)  
+**Product:** DiagnoseThat (`Lianhahaha.DiagnoseThat`, Store ID `n/a`)  
 **Capability requested:** `packagedServices` only  
 **Capability not requested:** `localSystemServices`  
 **Service account:** Local Service (`desktop6:Service` `StartAccount="localService"`)  
@@ -22,11 +22,11 @@ Product rules: [AGENTS.md](../../AGENTS.md) — observation only; never inject, 
 
 # Executive Business Justification
 
-**Pulse Diagnostics** is a professional, **read-only Windows observability** application for **IT professionals, developers, and system administrators**. It presents Event Log activity, system health, hardware/software inventory, and diagnostics status in a modern desktop UI, as defined by product architecture ([AGENTS.md](../../AGENTS.md), [ADR-002](../architecture/decisions/ADR-002-windows-service.md)).
+**DiagnoseThat** is a professional, **read-only Windows observability** application for **IT professionals, developers, and system administrators**. It presents Event Log activity, system health, hardware/software inventory, and diagnostics status in a modern desktop UI, as defined by product architecture ([AGENTS.md](../../AGENTS.md), [ADR-002](../architecture/decisions/ADR-002-windows-service.md)).
 
 ## Business problem this capability solves
 
-Pulse is designed as a **two-process product**: a Flutter UI (`Pulse.exe`) and a Windows Service observation host (`PulseService.exe`). Architecture requires diagnostic collection to run in the service, not in the UI ([01-system-overview.md](../architecture/01-system-overview.md)). That host must remain available under Service Control Manager (SCM) after the UI exits and after interactive logoff—the same model already shipping on GitHub/Inno.
+DiagnoseThat is designed as a **two-process product**: a Flutter UI (`DiagnoseThat.exe`) and a Windows Service observation host (`PulseService.exe`). Architecture requires diagnostic collection to run in the service, not in the UI ([01-system-overview.md](../architecture/01-system-overview.md)). That host must remain available under Service Control Manager (SCM) after the UI exits and after interactive logoff—the same model already shipping on GitHub/Inno.
 
 On the **GitHub / Inno** channel, `PulseService.exe` registers as **`NT AUTHORITY\LocalService`** via `CreateServiceW` ([`service_core.cpp`](../../service/pulse_service/src/service_core/service_core.cpp)). On the **Microsoft Store** channel, the same Local Service must be registered from the MSIX via `desktop6:Service`. Windows requires the restricted capability **`packagedServices`** for that registration. Without it, the Store edition cannot register the service host and cannot match the GitHub product’s observation architecture.
 
@@ -47,7 +47,7 @@ Store packaging validates that `service\PulseService.exe` is embedded and that `
 
 ## Why Local Service — and explicitly not Local System
 
-Pulse uses least privilege. **Local Service** is the account already used by the classic installer and is sufficient for the read-oriented Event Log, health, and inventory work implemented in `service/pulse_service`. **We intentionally do not request `localSystemServices`.** See the [LocalService capability matrix](#localservice-capability-matrix).
+DiagnoseThat uses least privilege. **Local Service** is the account already used by the classic installer and is sufficient for the read-oriented Event Log, health, and inventory work implemented in `service/pulse_service`. **We intentionally do not request `localSystemServices`.** See the [LocalService capability matrix](#localservice-capability-matrix).
 
 ## Approval request
 
@@ -85,7 +85,7 @@ This request is primarily a **Store-compatible registration path** for an observ
 | How registered | Elevated `--install-start` / `CreateServiceW` | Blocked under package identity | MSIX `desktop6:Service` |
 | UI as presentation client only | Yes | Incomplete vs architecture | Yes |
 
-**Evidence:** classic LocalService install in [`service_core.cpp`](../../service/pulse_service/src/service_core/service_core.cpp) and [`Pulse.iss`](../../tools/installer/Pulse.iss); Store declaration in [`package_msix_store.ps1`](../../tools/scripts/package_msix_store.ps1); packaged builds refuse classic install ([`IsRunningAsPackagedApp`](../../service/pulse_service/src/service_core/service_core.cpp); Store UI hides Repair/`--install-start` in [`service_lifecycle_controller.dart`](../../apps/pulse_app/lib/application/service_lifecycle_controller.dart)).
+**Evidence:** classic LocalService install in [`service_core.cpp`](../../service/pulse_service/src/service_core/service_core.cpp) and [`DiagnoseThat.iss`](../../tools/installer/DiagnoseThat.iss); Store declaration in [`package_msix_store.ps1`](../../tools/scripts/package_msix_store.ps1); packaged builds refuse classic install ([`IsRunningAsPackagedApp`](../../service/pulse_service/src/service_core/service_core.cpp); Store UI hides Repair/`--install-start` in [`service_lifecycle_controller.dart`](../../apps/pulse_app/lib/application/service_lifecycle_controller.dart)).
 
 Without `packagedServices`, Store customers cannot receive the same Local Service observation host that GitHub customers already have.
 
@@ -93,13 +93,13 @@ Without `packagedServices`, Store customers cannot receive the same Local Servic
 
 # Why StartupTask, runFullTrust, scheduled tasks, and background processes are insufficient
 
-For Pulse, each alternative fails a **product requirement encoded in architecture and code**, not a preference.
+For DiagnoseThat, each alternative fails a **product requirement encoded in architecture and code**, not a preference.
 
 ## `runFullTrust` alone (UI process only)
 
-The Store package already uses `runFullTrust` for `Pulse.exe` ([`pubspec.yaml` `msix_config`](../../apps/pulse_app/pubspec.yaml)). That is necessary for the desktop UI. It is **not** sufficient:
+The Store package already uses `runFullTrust` for `DiagnoseThat.exe` ([`pubspec.yaml` `msix_config`](../../apps/pulse_app/pubspec.yaml)). That is necessary for the desktop UI. It is **not** sufficient:
 
-- Closing `Pulse.exe` ends the UI process; collectors hosted there would stop with it.
+- Closing `DiagnoseThat.exe` ends the UI process; collectors hosted there would stop with it.
 - Architecture forbids calling Event Log / health / inventory collection APIs from the UI ([01-system-overview.md](../architecture/01-system-overview.md)).
 - The named-pipe **server** lives in `PulseService` ([`ipc_server.cpp`](../../service/pulse_service/src/ipc/ipc_server.cpp)); the UI is a `CreateFile` client ([`pulse_ipc_client.dart`](../../apps/pulse_app/lib/ipc/pulse_ipc_client.dart)).
 
@@ -116,8 +116,8 @@ The Store package already uses `runFullTrust` for `Pulse.exe` ([`pubspec.yaml` `
 
 ## Scheduled Task
 
-- Pulse’s IPC accept loop, health push thread, and (when enabled) Event Log live subscribe are **long-running service paths**, not periodic batch jobs ([`ipc_server.cpp`](../../service/pulse_service/src/ipc/ipc_server.cpp)).
-- Task Scheduler does not provide the SCM service contract Pulse implements (STOP/SHUTDOWN handling, auto-start service registration).
+- DiagnoseThat’s IPC accept loop, health push thread, and (when enabled) Event Log live subscribe are **long-running service paths**, not periodic batch jobs ([`ipc_server.cpp`](../../service/pulse_service/src/ipc/ipc_server.cpp)).
+- Task Scheduler does not provide the SCM service contract DiagnoseThat implements (STOP/SHUTDOWN handling, auto-start service registration).
 - Rebuilding as a scheduled executable would abandon the architecture validated on GitHub ([ADR-002](../architecture/decisions/ADR-002-windows-service.md)).
 
 **Impact:** cannot host the implemented service + named-pipe server model.
@@ -138,7 +138,7 @@ Under package identity, `--install` / `--uninstall` are refused; Store UI hides 
 
 # Why moving collectors into the UI is not a valid Store replacement
 
-A common review question is whether Pulse could avoid `packagedServices` by calling Wevtapi/PDH/SetupAPI directly from `Pulse.exe`.
+A common review question is whether DiagnoseThat could avoid `packagedServices` by calling Wevtapi/PDH/SetupAPI directly from `DiagnoseThat.exe`.
 
 | Objection | Code-backed response |
 |-----------|----------------------|
@@ -169,7 +169,7 @@ PulseService is the product’s **observation host**. Responsibilities below are
 
 | Non-responsibility | Why it matters to this review |
 |--------------------|-------------------------------|
-| UI rendering, settings, export dialogs | Remain in `Pulse.exe` |
+| UI rendering, settings, export dialogs | Remain in `DiagnoseThat.exe` |
 | Remote management / cloud agent | Not implemented |
 | Plugin hosting or script execution | Not implemented ([ADR-006](../architecture/decisions/ADR-006-plugin-deferral.md)) |
 | Antivirus, cleaner, optimizer, or booster | Out of product scope ([AGENTS.md](../../AGENTS.md)) |
@@ -193,7 +193,7 @@ PulseService is the product’s **observation host**. Responsibilities below are
 
 Based on the current `service/pulse_service` implementation (not a request for additional rights):
 
-| Capability / operation | Under LocalService in Pulse | Notes |
+| Capability / operation | Under LocalService in DiagnoseThat | Notes |
 |------------------------|----------------------------|-------|
 | Open/query/subscribe **System** Event Log | **Yes** (required channel) | [`event_log_channels.cpp`](../../service/pulse_service/src/collectors/event_log_channels.cpp) |
 | Open **Application** / **Setup** / selected Operational logs | **Yes** when accessible (optional) | Skipped/warned if open fails at use time |
@@ -209,7 +209,7 @@ Based on the current `service/pulse_service` implementation (not a request for a
 
 ## Why LocalSystem is intentionally NOT requested
 
-| Concern | Pulse position |
+| Concern | DiagnoseThat position |
 |---------|----------------|
 | Privilege | Above what the implemented read-oriented collectors require |
 | Restricted capability | Would require **`localSystemServices`** — **not requested** |
@@ -217,7 +217,7 @@ Based on the current `service/pulse_service` implementation (not a request for a
 | Security Event Log | Denied access is accepted under LocalService rather than elevating |
 | Trust boundary | LocalSystem would expand machine trust beyond product need |
 
-**Clear statement for Partner Center:** Pulse Diagnostics requests **`packagedServices` only**, with **`StartAccount="localService"`**. We do **not** request Local System or `localSystemServices`.
+**Clear statement for Partner Center:** DiagnoseThat requests **`packagedServices` only**, with **`StartAccount="localService"`**. We do **not** request Local System or `localSystemServices`.
 
 ---
 
@@ -225,7 +225,7 @@ Based on the current `service/pulse_service` implementation (not a request for a
 
 ## Who the product is for
 
-Intended audience from product positioning ([AGENTS.md](../../AGENTS.md), Store listing as Pulse Diagnostics):
+Intended audience from product positioning ([AGENTS.md](../../AGENTS.md), Store listing as DiagnoseThat):
 
 - **IT professionals** — Event Log and system health in one tool  
 - **Developers** — process, service, and Event Log behavior on development PCs  
@@ -241,7 +241,7 @@ Intended audience from product positioning ([AGENTS.md](../../AGENTS.md), Store 
 | Same Local Service model as GitHub | Store edition cannot register that host |
 | Least-privilege background host on Store | No supported Store registration path for Local Service |
 
-Closing `Pulse.exe` does **not** stop `PulseService` when the service is registered. The UI reconnects on next launch ([`pulse_ipc_client.dart`](../../apps/pulse_app/lib/ipc/pulse_ipc_client.dart)).
+Closing `DiagnoseThat.exe` does **not** stop `PulseService` when the service is registered. The UI reconnects on next launch ([`pulse_ipc_client.dart`](../../apps/pulse_app/lib/ipc/pulse_ipc_client.dart)).
 
 ---
 
@@ -372,7 +372,7 @@ This justification does **not** claim `internetClient` is needed for the service
 
 | Process | Role | Technology |
 |---------|------|------------|
-| `Pulse.exe` | Presentation client | Flutter Desktop |
+| `DiagnoseThat.exe` | Presentation client | Flutter Desktop |
 | `PulseService.exe` | Observation host (SCM Local Service) | C++ Windows Service |
 
 Store packaging embeds the service binary and declares:
@@ -417,7 +417,7 @@ Resolved via `SHGetKnownFolderPath(FOLDERID_ProgramData)` ([`config.cpp`](../../
 
 | Topic | Statement |
 |-------|-----------|
-| Collected categories | Event Log (accessible channels), health metrics, inventory, Pulse diagnostics status — local only |
+| Collected categories | Event Log (accessible channels), health metrics, inventory, DiagnoseThat diagnostics status — local only |
 | Sensitivity | May include hostnames, executable paths, Event Log message text, and process metadata exposed to LocalService |
 | Network rates | Health may use local ETW/PDH-style **rate** metrics; not HTTPS payload inspection / MITM |
 | Storage | `%ProgramData%\Pulse\` (service); local UI preferences |
@@ -494,11 +494,11 @@ sequenceDiagram
   participant Svc
   participant UI
 
-  User->>Store: Install Pulse Diagnostics
+  User->>Store: Install DiagnoseThat
   Store->>OS: Deploy MSIX packagedServices
   OS->>SCM: Register PulseService LocalService
   SCM->>Svc: Auto start
-  User->>UI: Launch Pulse.exe
+  User->>UI: Launch DiagnoseThat.exe
   UI->>Svc: Named pipe connect
   UI->>Svc: Snapshot and live subscribe
 ```
@@ -507,7 +507,7 @@ sequenceDiagram
 
 # Closing request to Microsoft
 
-Pulse Diagnostics is already a **two-process product** on GitHub/Inno: a Flutter UI plus **`PulseService`** running as **Local Service**.
+DiagnoseThat is already a **two-process product** on GitHub/Inno: a Flutter UI plus **`PulseService`** running as **Local Service**.
 
 For the Microsoft Store edition, Windows cannot register that Local Service from the AppxManifest unless the package is granted **`packagedServices`**. Classic `CreateService` / `--install-start` is refused under package identity, so there is **no alternative Store-legal path** to the observation host architecture already shipping on GitHub.
 
@@ -525,7 +525,7 @@ For the Microsoft Store edition, Windows cannot register that Local Service from
 - Remote management, plugins, scripting, or telemetry capabilities  
 - Retention of unused UI `internetClient` (recommend removal)
 
-**We respectfully request approval of `packagedServices` for Pulse Diagnostics (`Regncreative.PulseDiagnostics`, Store ID `9PNDTLNTJ82T`) so the Store package can declare `desktop6:Service` with `StartAccount="localService"` and ship the same core observation-host experience as the classic installer.**
+**We respectfully request approval of `packagedServices` for DiagnoseThat (`Lianhahaha.DiagnoseThat`, Store ID `n/a`) so the Store package can declare `desktop6:Service` with `StartAccount="localService"` and ship the same core observation-host experience as the classic installer.**
 
 This justification reflects the repository as implemented for the Store packaged-service edition.
 
@@ -535,7 +535,7 @@ This justification reflects the repository as implemented for the Store packaged
 
 ## 1. `runFullTrust` UI only
 
-Store package declares `runFullTrust` for `Pulse.exe` ([`pubspec.yaml` `msix_config`](../../apps/pulse_app/pubspec.yaml)). UI is an IPC client ([`pulse_ipc_client.dart`](../../apps/pulse_app/lib/ipc/pulse_ipc_client.dart)); pipe server is in [`ipc_server.cpp`](../../service/pulse_service/src/ipc/ipc_server.cpp). Architecture keeps collectors out of the UI ([01-system-overview.md](../architecture/01-system-overview.md)).
+Store package declares `runFullTrust` for `DiagnoseThat.exe` ([`pubspec.yaml` `msix_config`](../../apps/pulse_app/pubspec.yaml)). UI is an IPC client ([`pulse_ipc_client.dart`](../../apps/pulse_app/lib/ipc/pulse_ipc_client.dart)); pipe server is in [`ipc_server.cpp`](../../service/pulse_service/src/ipc/ipc_server.cpp). Architecture keeps collectors out of the UI ([01-system-overview.md](../architecture/01-system-overview.md)).
 
 ## 2. `StartupTask`
 
@@ -632,7 +632,7 @@ See main section [IPC security](#ipc-security) for SDDL, BU disclosure, and diag
 Additional notes:
 
 - Max pipe instances default 32 (config clamp 2–64)
-- Clients: Store UI (`Pulse.exe`); optional GitHub-only PulseMCP; engineering tools
+- Clients: Store UI (`DiagnoseThat.exe`); optional GitHub-only PulseMCP; engineering tools
 - Not implemented: mutual TLS, PID allowlists, pipe impersonation tokens
 
 ---
@@ -698,7 +698,7 @@ flowchart TB
 | Pipe SDDL | [`constants.hpp`](../../shared/pulse_common/include/pulse/constants.hpp) |
 | Store packaging | [`package_msix_store.ps1`](../../tools/scripts/package_msix_store.ps1), [`validate_msix_store.ps1`](../../tools/scripts/validate_msix_store.ps1) |
 | Store UI gates | [`service_lifecycle_controller.dart`](../../apps/pulse_app/lib/application/service_lifecycle_controller.dart), [`pulse_deployment.dart`](../../apps/pulse_app/lib/platform/pulse_deployment.dart) |
-| Classic installer | [`Pulse.iss`](../../tools/installer/Pulse.iss) |
+| Classic installer | [`DiagnoseThat.iss`](../../tools/installer/DiagnoseThat.iss) |
 | Store vs classic notes | [`41-store-packaged-service.md`](../architecture/41-store-packaged-service.md), [`microsoft-store.md`](../guides/microsoft-store.md) |
 | Plugin deferral | [`ADR-006`](../architecture/decisions/ADR-006-plugin-deferral.md) |
 | UI capabilities | [`apps/pulse_app/pubspec.yaml`](../../apps/pulse_app/pubspec.yaml) |

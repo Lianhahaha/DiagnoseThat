@@ -8,7 +8,7 @@
 
 ## Context
 
-Pulse requires a native Windows backend to consume Event Log (Wevtapi), ETW (evntrace/TDH), and WMI (MI) APIs. The backend must run as a Windows Service, handle high-frequency event streams, and maintain low resource usage.
+DiagnoseThat requires a native Windows backend to consume Event Log (Wevtapi), ETW (evntrace/TDH), and WMI (MI) APIs. The backend must run as a Windows Service, handle high-frequency event streams, and maintain low resource usage.
 
 ## Decision
 

@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.6.0`  
-**Pulse app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
 **Scope:** M6 — `report.export` (json / csv / html / pdf / markdown)  
 **Status:** **FROZEN** — all required gates PASS. M7 blocked until explicit start.
 
@@ -54,7 +54,7 @@ cd apps/pulse_mcp && npm run validate:m6
 |-------|--------|-------|
 | `mcp.self` | Pass | `0.6.0`, namespace `report`, `report.export` |
 | `report.export` json/csv/html/pdf/md | Pass | metadata only |
-| Temp export | Pass | `temporary: true` under `%TEMP%\Pulse\mcp-reports` |
+| Temp export | Pass | `temporary: true` under `%TEMP%\DiagnoseThat\mcp-reports` |
 
 ## Sign-off
 

@@ -1,6 +1,6 @@
-﻿# PulseService
+# PulseService
 
-Native Windows service for Pulse — Event Log collection, named-pipe IPC, System Health sampling.
+Native Windows service for DiagnoseThat — Event Log collection, named-pipe IPC, System Health sampling.
 
 ## CLI
 
@@ -22,4 +22,4 @@ PulseService.exe                   Run as SCM service
 ## Notes
 
 - Observation only — no injection, hooks, or OS mutation.
-- The Pulse app can start/stop/restart via elevated CLI after an explicit UAC prompt.
+- The DiagnoseThat app can start/stop/restart via elevated CLI after an explicit UAC prompt.

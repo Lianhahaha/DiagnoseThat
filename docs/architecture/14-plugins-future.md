@@ -2,7 +2,7 @@
 
 ## Status: Future milestone (M4) — **not in v1 execution plan**
 
-No PluginManager, PluginHost, or plugin loading ships in Pulse v1.
+No PluginManager, PluginHost, or plugin loading ships in DiagnoseThat v1.
 
 ---
 

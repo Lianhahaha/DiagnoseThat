@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Verified Windows APIs for **Pulse v1** (Event Log collector). Future milestone APIs are listed as deferred.
+Verified Windows APIs for **DiagnoseThat v1** (Event Log collector). Future milestone APIs are listed as deferred.
 
-Pulse never invents undocumented APIs.
+DiagnoseThat never invents undocumented APIs.
 
 ---
 

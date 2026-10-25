@@ -8,7 +8,7 @@
 
 ## Context
 
-Pulse needs low-latency live updates and durable history. The original “shared ring + sync SQLite on ingest” design failed architecture review (P0-1, P0-3).
+DiagnoseThat needs low-latency live updates and durable history. The original “shared ring + sync SQLite on ingest” design failed architecture review (P0-1, P0-3).
 
 ## Decision
 

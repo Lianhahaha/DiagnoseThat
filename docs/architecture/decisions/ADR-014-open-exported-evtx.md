@@ -8,7 +8,7 @@
 
 ## Context
 
-People who support other PCs asked to open an event log exported from another machine (for example `System.evtx`) and read it in plain language, the same way Pulse explains live events.
+People who support other PCs asked to open an event log exported from another machine (for example `System.evtx`) and read it in plain language, the same way DiagnoseThat explains live events.
 
 Constraints:
 
@@ -24,7 +24,7 @@ Constraints:
    PulseService.exe --read-evtx <file.evtx> --out <result>
    ```
 
-   The **Pulse app** runs it as the signed-in user, so it can read any file the user can, and needs neither the running service nor elevation.
+   The **DiagnoseThat app** runs it as the signed-in user, so it can read any file the user can, and needs neither the running service nor elevation.
 2. The command opens the file with `EvtQuery(..., EvtQueryFilePath | EvtQueryReverseDirection)` and reads at most `kEvtxImportMaxEvents` (20,000) events, newest first. Each event goes through the same `ToTimelineEvent` → `EventIntelligence` path as live events. Every event carries its raw XML, because a record id from another PC cannot be looked up again.
 3. The result is written as wire frames: one `Envelope{TimelineEvent}` per event, then a closing `Envelope{TimelineSnapshot}` with no events that carries the event limit. The command writes to `<result>.partial` and renames it at the end, so a failed run never leaves a partial result. Events whose frame would exceed 2 MB drop only their raw XML.
 4. Imported event ids are prefixed with `evtx:`. They never collide with live events (bookmarks, pins), and the details panel never asks the service for their XML.
@@ -40,7 +40,7 @@ Constraints:
 ## Limitations and future work
 
 - Only the newest 20,000 events per file.
-- No "Open with Pulse" file association or drag-and-drop yet.
+- No "Open with DiagnoseThat" file association or drag-and-drop yet.
 - One file at a time; no merged view with live events.
 
 ## References

@@ -11,10 +11,10 @@
 | Property | Value |
 |----------|-------|
 | Service name | `PulseService` |
-| Display name | Pulse |
-| Description | Read-only Windows Event Log collector for Pulse |
+| Display name | DiagnoseThat |
+| Description | Read-only Windows Event Log collector for DiagnoseThat |
 | Binary | `PulseService.exe` |
-| Install | `%ProgramFiles%\Pulse\Service\` |
+| Install | `%ProgramFiles%\DiagnoseThat\Service\` |
 | Data | `%ProgramData%\Pulse\` |
 | Account | `NT AUTHORITY\LocalService` |
 
@@ -63,7 +63,7 @@ Restart on failure (5s / 30s / 60s) as previously specified.
   },
   "storage": {
     "summary_cache_capacity": 10000,
-    "sqlite_path": "%ProgramData%\\Pulse\\data\\pulse.db",
+    "sqlite_path": "%ProgramData%\\DiagnoseThat\\data\\pulse.db",
     "retention_days": 7,
     "store_raw": false
   },
@@ -74,7 +74,7 @@ Restart on failure (5s / 30s / 60s) as previously specified.
   },
   "logging": {
     "level": "info",
-    "path": "%ProgramData%\\Pulse\\logs\\"
+    "path": "%ProgramData%\\DiagnoseThat\\logs\\"
   }
 }
 ```
@@ -91,7 +91,7 @@ No `etw` / `wmi` keys in v1 schema. Unknown keys ignored for forward compatibili
 
 ## Install / Uninstall / Control
 
-Admin elevation is required for install and service control. The Pulse UI may launch these via an explicit UAC prompt (`runas`) — never silently.
+Admin elevation is required for install and service control. The DiagnoseThat UI may launch these via an explicit UAC prompt (`runas`) — never silently.
 
 | Flag | Behavior |
 |------|----------|

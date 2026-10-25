@@ -1,4 +1,4 @@
-# ADR-007: Event Log Only for Pulse v1
+# ADR-007: Event Log Only for DiagnoseThat v1
 
 **Status:** Accepted
 

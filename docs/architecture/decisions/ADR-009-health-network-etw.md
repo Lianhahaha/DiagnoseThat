@@ -12,7 +12,7 @@ Per-process network rates cannot use `GetPerTcpConnectionEStats` under `LocalSer
 
 ## Decision
 
-1. Introduce a **Pulse-owned real-time ETW session** (`PulseHealthNet`) used **only** for System Health per-process network aggregation.
+1. Introduce a **DiagnoseThat-owned real-time ETW session** (`PulseHealthNet`) used **only** for System Health per-process network aggregation.
 2. Prefer **non–NT Kernel Logger** sessions so `LocalService` can control them ([StartTrace](https://learn.microsoft.com/en-us/windows/win32/api/evntrace/nf-evntrace-starttracea)).
 3. Enable **`Microsoft-Windows-Kernel-Network`** (and related send/recv events as available). If `StartTrace` / `EnableTraceEx2` fails, leave `has_net_*` unset — never invent rates.
 4. Decode **off** the `ProcessTrace` callback thread: callback copies PID + size only; aggregate under a mutex; health sampler reads a snapshot (~1 Hz).

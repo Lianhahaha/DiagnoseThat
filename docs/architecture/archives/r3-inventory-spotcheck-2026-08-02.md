@@ -4,7 +4,7 @@ Read-only comparisons against Windows native tools. Observation only.
 
 **Freeze:** [r3-inventory-engine-frozen-2026-08-02.md](r3-inventory-engine-frozen-2026-08-02.md)  
 **Native capture:** [inventory-spotcheck-2026-08-02_11-38-51.md](../../tools/validation-results/inventory-spotcheck-2026-08-02_11-38-51.md)  
-**Pulse dump:** [inventory-dump-release.txt](../../tools/validation-results/inventory-dump-release.txt)
+**DiagnoseThat dump:** [inventory-dump-release.txt](../../tools/validation-results/inventory-dump-release.txt)
 
 ## Host
 
@@ -16,7 +16,7 @@ Read-only comparisons against Windows native tools. Observation only.
 
 ## Checklist
 
-| Domain | Native tool | Pulse field focus | Result |
+| Domain | Native tool | DiagnoseThat field focus | Result |
 |--------|-------------|-------------------|--------|
 | Motherboard | msinfo32 / Win32_BaseBoard | manufacturer, product | PASS — ASUSTeK / PRIME B650M-K |
 | BIOS | msinfo32 / Win32_BIOS | vendor, version, date | PASS — AMI 3841 / 02/25/2026 |

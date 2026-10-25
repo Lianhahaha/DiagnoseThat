@@ -4,7 +4,7 @@ Status: **Complete** (shipping as `0.2.0-beta`)
 
 ## Goal
 
-Reorganize Pulse’s Flutter UI for clarity and discoverability without removing System Health, Timeline, Diagnostics, or IPC capabilities. Collector → IPC → Flutter unchanged.
+Reorganize DiagnoseThat’s Flutter UI for clarity and discoverability without removing System Health, Timeline, Diagnostics, or IPC capabilities. Collector → IPC → Flutter unchanged.
 
 ## Delivered
 

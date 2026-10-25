@@ -3,7 +3,7 @@
 ## Repository (v1)
 
 ```
-Pulse/
+DiagnoseThat/
 ├── AGENTS.md
 ├── docs/architecture/          # This package
 ├── apps/pulse_app/             # Flutter UI

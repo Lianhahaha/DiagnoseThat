@@ -11,13 +11,13 @@
 
 ## 1. Purpose
 
-PulseMCP is a **first-class Pulse product** that exposes Windows diagnostics collected by PulseService to any MCP-compatible AI client.
+PulseMCP is a **first-class DiagnoseThat product** that exposes Windows diagnostics collected by PulseService to any MCP-compatible AI client.
 
-Pulse does **not** embed an LLM and does **not** require OpenAI/Anthropic/Google API keys.
+DiagnoseThat does **not** embed an LLM and does **not** require OpenAI/Anthropic/Google API keys.
 
 | Binary | Responsibility |
 |--------|------------------|
-| `Pulse.exe` | Human UI; Settings opt-in; **MCP Diagnostics** pane |
+| `DiagnoseThat.exe` | Human UI; Settings opt-in; **MCP Diagnostics** pane |
 | `PulseService.exe` | Windows APIs, collectors, timeline, health |
 | `PulseMCP.exe` | Official MCP server; tool/resource adapters; MCP logs & metrics |
 
@@ -30,7 +30,7 @@ Pulse does **not** embed an LLM and does **not** require OpenAI/Anthropic/Google
 3. **Structured JSON** — tools return machine JSON; AI formats prose.
 4. **Namespaces** — `system.*`, `process.*`, `timeline.*`, `diagnostics.*`, `report.*`, `service.*`, `mcp.*`.
 5. **Subscribe, don’t poll** — live Resources for hot metrics and timeline.
-6. **Pulse owns reports** — `report.export` writes files; model receives paths.
+6. **DiagnoseThat owns reports** — `report.export` writes files; model receives paths.
 7. **Independent product health** — PulseMCP version/uptime/metrics independent of UI and service.
 8. **Forward-compatible** — Prompts, Sampling, Streamable HTTP, Auth plug in without redesign.
 
@@ -48,8 +48,8 @@ flowchart TB
     VSCode[VS Code / Copilot]
   end
 
-  subgraph pulse [Pulse Product]
-    UI[Pulse.exe]
+  subgraph pulse [DiagnoseThat Product]
+    UI[DiagnoseThat.exe]
     MCP[PulseMCP.exe]
     SVC[PulseService.exe]
   end
@@ -65,12 +65,12 @@ flowchart TB
   UI -.->|MCP status IPC or local status file| MCP
 ```
 
-Pulse uses the **local MCP stdio transport**. No remote MCP endpoint is required. Streamable HTTP / remote ChatGPT connectors are **out of scope** for the current product (observation remains local-only).
+DiagnoseThat uses the **local MCP stdio transport**. No remote MCP endpoint is required. Streamable HTTP / remote ChatGPT connectors are **out of scope** for the current product (observation remains local-only).
 ### Versioning
 
 | Artifact | Version source |
 |----------|----------------|
-| Pulse UI | `apps/pulse_app/pubspec.yaml` + `kAppVersion` |
+| DiagnoseThat UI | `apps/pulse_app/pubspec.yaml` + `kAppVersion` |
 | PulseService | `kServiceVersion` / `version.hpp` |
 | PulseMCP | `apps/pulse_mcp/package.json` → stamped into EXE + `mcp.server.version` |
 
@@ -79,7 +79,7 @@ Versions **may diverge** across milestones; Diagnostics shows all three.
 ### Lifecycle
 
 1. User enables **MCP bridge** in Settings (default **off**).
-2. Installer places `PulseMCP.exe` under `Program Files\Pulse\`.
+2. Installer places `PulseMCP.exe` under `Program Files\DiagnoseThat\`.
 3. AI client config launches `PulseMCP.exe` (stdio). PulseMCP connects to `\\.\pipe\PulseService`.
 4. If service is down, tools return structured error `pulse.service_unavailable` (MCP error + JSON body).
 5. PulseMCP does **not** elevate or start the service; UI remains responsible for SCM/UAC.
@@ -155,7 +155,7 @@ PulseMCP declares support for:
 | `service.status` | observation | &lt; 100 ms | Diagnostics identity / SCM fields |
 | `mcp.self` | observation | &lt; 50 ms | PulseMCP internal metrics |
 
-\* `report.export` writes under the user’s Pulse export directory (local artifact). Permission remains observation of diagnostics; it does not mutate Windows. Classify as `read_only` if product policy prefers separating “write files” — **default for v1: `observation` with explicit `sideEffects: ["write_user_export_dir"]` in metadata.**
+\* `report.export` writes under the user’s DiagnoseThat export directory (local artifact). Permission remains observation of diagnostics; it does not mutate Windows. Classify as `read_only` if product policy prefers separating “write files” — **default for v1: `observation` with explicit `sideEffects: ["write_user_export_dir"]` in metadata.**
 
 ### 7.2 Reserved (not registered in v1)
 
@@ -217,9 +217,9 @@ Rules:
 |-------|---------|
 | `versions.mcpProtocol` | MCP spec version this server speaks (e.g. `2025-03-26` / negotiated) |
 | `versions.mcpServer` | PulseMCP semver (`package.json`) |
-| `versions.pulseApp` | Pulse product/UI version stamp when known |
+| `versions.pulseApp` | DiagnoseThat product/UI version stamp when known |
 | `versions.pulseService` | From `ServerHello` / `Pong` |
-| `versions.ipcProtocol` | Pulse IPC `kProtocolVersion` (integer, currently `1`) |
+| `versions.ipcProtocol` | DiagnoseThat IPC `kProtocolVersion` (integer, currently `1`) |
 
 Clients use these to detect incompatibility immediately.
 
@@ -604,7 +604,7 @@ v1 scope (**not** full SCM catalog):
   },
   "catalog": {
     "available": false,
-    "reason": "Full Windows service inventory is not collected in this Pulse milestone."
+    "reason": "Full Windows service inventory is not collected in this DiagnoseThat milestone."
   }
 }
 ```
@@ -648,7 +648,7 @@ v1 scope (**not** full SCM catalog):
 }
 ```
 
-If `outputPath` / `directory` omitted → write under `%TEMP%\\Pulse\\mcp-reports` (`temporary: true`) with TTL cleanup.
+If `outputPath` / `directory` omitted → write under `%TEMP%\\DiagnoseThat\\mcp-reports` (`temporary: true`) with TTL cleanup.
 
 **Errors:** `INVALID_REPORT_TYPE`, `INVALID_FORMAT`, `EXPORT_FAILED`, `ACCESS_DENIED`, `NOT_SUPPORTED` (e.g. diagnostics CSV).
 
@@ -729,7 +729,7 @@ If MCP is disabled in Settings, PulseMCP still may be spawned by an AI client; t
 4. Response size caps (e.g. 512 KiB JSON soft limit; timeline `limit` max 500).
 5. Rate limits per tool class (timeline/report stricter).
 6. Local audit log: time, tool, ok/error, latency, byte size — **not** full payloads by default.
-7. Disclosure string in Settings: AI clients may upload tool results to their cloud; Pulse does not.
+7. Disclosure string in Settings: AI clients may upload tool results to their cloud; DiagnoseThat does not.
 8. Future HTTP: localhost, Origin check, bearer token ACL’d to user.
 
 ---
@@ -737,7 +737,7 @@ If MCP is disabled in Settings, PulseMCP still may be spawned by an AI client; t
 ## 13. Project structure
 
 ```
-Pulse/
+DiagnoseThat/
 ├── apps/
 │   ├── pulse_app/                 # Flutter UI (+ MCP Diagnostics)
 │   └── pulse_mcp/                 # FIRST-CLASS MCP PRODUCT
@@ -812,7 +812,7 @@ Supported local clients (registration from Settings → AI Integration):
 {
   "mcpServers": {
     "pulse": {
-      "command": "C:\\Program Files\\Pulse\\PulseMCP.exe",
+      "command": "C:\\Program Files\\DiagnoseThat\\PulseMCP.exe",
       "args": []
     }
   }
@@ -826,7 +826,7 @@ VS Code user `mcp.json`:
   "servers": {
     "pulse": {
       "type": "stdio",
-      "command": "C:\\Program Files\\Pulse\\PulseMCP.exe",
+      "command": "C:\\Program Files\\DiagnoseThat\\PulseMCP.exe",
       "args": []
     }
   }
@@ -840,7 +840,7 @@ Dev:
   "mcpServers": {
     "pulse": {
       "command": "node",
-      "args": ["C:\\dev\\Pulse\\apps\\pulse_mcp\\dist\\main.js"]
+      "args": ["C:\\dev\\DiagnoseThat\\apps\\pulse_mcp\\dist\\main.js"]
     }
   }
 }
@@ -871,7 +871,7 @@ Each phase: unit tests for schemas, integration test against PulseService `--con
 
 ## 16. Explicit non-goals
 
-- Embedding or calling cloud LLMs from Pulse
+- Embedding or calling cloud LLMs from DiagnoseThat
 - Replacing named-pipe IPC with HTTP for the UI
 - Registering Administrative tools in v1
 - Returning pre-formatted markdown tables from tools

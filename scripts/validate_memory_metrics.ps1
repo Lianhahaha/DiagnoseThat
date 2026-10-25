@@ -1,4 +1,4 @@
-# Memory metrics validation — same APIs Pulse uses vs raw Windows reads.
+# Memory metrics validation — same APIs DiagnoseThat uses vs raw Windows reads.
 # Run: powershell -ExecutionPolicy Bypass -File scripts/validate_memory_metrics.ps1
 
 $ErrorActionPreference = 'Stop'
@@ -113,7 +113,7 @@ if ($null -ne $cache -and $null -ne $modified -and $null -ne $reserve -and $null
 }
 
 Write-Host ''
-Write-Host '=== Memory validation (Windows APIs Pulse uses) ==='
+Write-Host '=== Memory validation (Windows APIs DiagnoseThat uses) ==='
 Write-Host ('{0,-28} {1,-14} {2}' -f 'Metric', 'Value', 'Windows API / Formula')
 Write-Host ('-' * 78)
 $rows = @(
@@ -137,6 +137,6 @@ if ($null -ne $faults) {
   Write-Host ('{0,-28} {1,-14} {2}' -f 'Page Faults/sec', $faults, 'PDH Page Faults/sec')
 }
 Write-Host ''
-Write-Host 'Compare Formatted values to Pulse Memory Overview and Task Manager Performance > Memory.'
+Write-Host 'Compare Formatted values to DiagnoseThat Memory Overview and Task Manager Performance > Memory.'
 Write-Host 'Process Memory column = SPI WorkingSetPrivateSize (summed per app group).'
 Write-Host ''

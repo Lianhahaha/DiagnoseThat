@@ -43,7 +43,7 @@ The Microsoft Store edition ships `service\PulseService.exe` inside the MSIX and
 | `docs/guides/microsoft-store.md` | Store architecture + justification |
 | `.github/workflows/ci.yml` | Store MSIX validation job |
 
-**Unchanged:** `tools/installer/Pulse.iss`, `tools/scripts/package_beta.ps1`, classic SCM image path under Program Files.
+**Unchanged:** `tools/installer/DiagnoseThat.iss`, `tools/scripts/package_beta.ps1`, classic SCM image path under Program Files.
 
 ---
 

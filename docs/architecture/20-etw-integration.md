@@ -7,9 +7,9 @@
 | **Health per-process network** (`NetworkEtwEngine` / `PulseHealthNet`) | **Implemented** (ADR-009) |
 | **Timeline ETW ingest** | **Deferred** — Event Log only (ADR-007 unchanged) |
 
-Pulse Timeline v1 does **not** implement general ETW adapters, link TDH for Timeline, or feed ETW into the Collector MPSC.
+DiagnoseThat Timeline v1 does **not** implement general ETW adapters, link TDH for Timeline, or feed ETW into the Collector MPSC.
 
-System Health uses a **scoped** Pulse-owned real-time session for Kernel-Network send/recv byte aggregation only. That path must not call TDH inside `EventRecordCallback`.
+System Health uses a **scoped** DiagnoseThat-owned real-time session for Kernel-Network send/recv byte aggregation only. That path must not call TDH inside `EventRecordCallback`.
 
 ---
 
@@ -38,7 +38,7 @@ These incorporate accepted review findings:
 1. **Do not** decode with TDH inside `EventRecordCallback` / on the `ProcessTrace` thread — copy then decode off-thread
 2. Provider allowlist + rate limits before ingest MPSC
 3. Capability-gated session control; never silent elevation
-4. Prefer Pulse-owned sessions over attaching to arbitrary existing sessions
+4. Prefer DiagnoseThat-owned sessions over attaching to arbitrary existing sessions
 5. Feed the same Collector MPSC as Event Log
 
 Historical design notes (session modes, provider tables, privilege matrix) from the original draft remain useful planning material but are **superseded for scheduling**: no Timeline ETW work items in v1.

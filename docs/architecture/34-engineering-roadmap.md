@@ -6,15 +6,15 @@
 
 **Change control:** Future work follows this roadmap unless a new ADR explicitly revises direction. Do not reorder waves without an ADR amendment referencing this document.
 
-> **Revision 2026-10-14.** PulseMCP (AI Integration) was removed in 1.3 by [ADR-013](decisions/ADR-013-remove-pulsemcp.md). The MCP parts of this plan — Wave C (R5–R7), the MCP vision line and MCP-dependent items elsewhere — are **cancelled**; the local Assistant is Pulse's AI feature. Kernel-level analysis will use ETW, not drivers (ADR pending, superseding ADR-007 for the Timeline). Shipped releases and the v1.4 scope are listed in [§6](#6-release-plan-advisory).
+> **Revision 2026-10-14.** PulseMCP (AI Integration) was removed in 1.3 by [ADR-013](decisions/ADR-013-remove-pulsemcp.md). The MCP parts of this plan — Wave C (R5–R7), the MCP vision line and MCP-dependent items elsewhere — are **cancelled**; the local Assistant is DiagnoseThat's AI feature. Kernel-level analysis will use ETW, not drivers (ADR pending, superseding ADR-007 for the Timeline). Shipped releases and the v1.4 scope are listed in [§6](#6-release-plan-advisory).
 
 ---
 
 ## Vision
 
-> **Pulse is a local-first Windows observability platform providing native diagnostics, historical analysis, extensibility, and AI interoperability through the Model Context Protocol.**
+> **DiagnoseThat is a local-first Windows observability platform providing native diagnostics, historical analysis, extensibility, and AI interoperability through the Model Context Protocol.**
 
-Pulse is not “another Task Manager.” It observes Windows through official APIs, explains what is happening in human language, persists and correlates history over time, exposes itself to assistants via MCP, and eventually offers Plugin and Public SDKs — all without cloud telemetry, embedded LLMs, or mutating the OS.
+DiagnoseThat is not “another Task Manager.” It observes Windows through official APIs, explains what is happening in human language, persists and correlates history over time, exposes itself to assistants via MCP, and eventually offers Plugin and Public SDKs — all without cloud telemetry, embedded LLMs, or mutating the OS.
 
 Single plan for everything remaining after System Health quality, UX redesign (minus theme), and PulseMCP **M1**.
 
@@ -27,10 +27,10 @@ Single plan for everything remaining after System Health quality, UX redesign (m
 3. **Inventory Engine earlier** — unblocks reports, MCP, and hardware depth.
 4. **Reports as a first-class product** — professional multi-format exports.
 5. **Long-term Plugin SDK** — out-of-process, ADR-006 aligned.
-6. **Long-term AI Diagnostics** — on PulseMCP only; no embedded model or API keys in Pulse.
+6. **Long-term AI Diagnostics** — on PulseMCP only; no embedded model or API keys in DiagnoseThat.
 7. **Streamable HTTP optional** — after core MCP (M2–M7).
 8. **Observability Platform (R16)** — long-term product north star (history, RCA, baselines, health scoring).
-9. **Public SDK (R17)** — third-party languages against versioned Pulse APIs (distinct from Plugin SDK).
+9. **Public SDK (R17)** — third-party languages against versioned DiagnoseThat APIs (distinct from Plugin SDK).
 
 Complexity: **S** ≤2 days · **M** ~1 week · **L** 2–4 weeks · **XL** multi-milestone / new engine.
 
@@ -197,7 +197,7 @@ flowchart TD
 | **Docs** | 07-timeline-engine, **[36-timeline-intelligence-r2.md](36-timeline-intelligence-r2.md)**, [38 inventory](38-timeline-intelligence-rules-inventory.md) |
 | **Status** | **Complete** (2026-08-02) · frozen |
 
-**Goal:** Timeline is a Pulse flagship surface (incident collapse, RCA hints, Event Viewer–parity details, links, metadata, export, search, 100k+ virtualization) — still Event Log only, deterministic rules only.
+**Goal:** Timeline is a DiagnoseThat flagship surface (incident collapse, RCA hints, Event Viewer–parity details, links, metadata, export, search, 100k+ virtualization) — still Event Log only, deterministic rules only.
 
 **Success metrics (all required):**
 
@@ -259,7 +259,7 @@ flowchart TD
 **Success metrics (all required):**
 
 - [ ] Professional shell: branded HTML + PDF + Markdown + JSON + CSV with cover identity (OS/CPU/GPU) and consistent tables
-- [ ] System summary / combined executive template from existing Pulse data
+- [ ] System summary / combined executive template from existing DiagnoseThat data
 - [ ] Markdown first-class in Flutter Reports UI
 - [ ] Inventory-backed report templates for services, drivers, installed software (after R3)
 - [ ] Shared generators usable by Flutter and PulseMCP (or documented single source of truth)
@@ -300,7 +300,7 @@ Kept for history only; none of R5–R7 will be built.
 - [x] Diagnostics MCP section (version, policy, uptime, metrics, subscriptions, log path)
 - [x] `PulseMCP.exe` + private `runtime\` + `mcp\` in installer payload (`package_pulsemcp.ps1`)
 - [x] Pipe max instances ≥ 8 (`kMaxPipeInstances`)
-- [x] Cursor global registration + unregister (Pulse-owned only); Claude Desktop; Windsurf; Cline; VS Code / Copilot (local stdio); ChatGPT stub removed
+- [x] Cursor global registration + unregister (DiagnoseThat-owned only); Claude Desktop; Windsurf; Cline; VS Code / Copilot (local stdio); ChatGPT stub removed
 - [x] Privacy / AI disclosure copy in Settings → AI Integration
 
 #### R7 — MCP M8 Streamable HTTP (optional) (XL)
@@ -387,7 +387,7 @@ Kept for history only; none of R5–R7 will be built.
 
 #### R14 — AI Diagnostics on PulseMCP (XL)
 
-**ADR-013 required. No embedded LLM / no API keys in Pulse.**
+**ADR-013 required. No embedded LLM / no API keys in DiagnoseThat.**
 
 **Success metrics:**
 
@@ -395,7 +395,7 @@ Kept for history only; none of R5–R7 will be built.
 - [ ] MCP Prompts for ≥3 diagnostic playbooks
 - [ ] Playbook resources under `pulse://playbooks/*`
 - [ ] Prompts only invoke Observation tools; policy gate enforced
-- [ ] User-facing copy clarifies AI runs in the MCP *client*, not inside Pulse
+- [ ] User-facing copy clarifies AI runs in the MCP *client*, not inside DiagnoseThat
 - [ ] Flutter docs/deep-link for MCP client config (no in-app chat model)
 
 #### R15 — Future collectors / engines (ADR-gated) (XL)
@@ -411,7 +411,7 @@ Engines: Timeline ETW, WMI, Registry/File/Network/Driver/WER, replay, app-groupi
 
 #### R16 — Observability Platform (XL) — **long-term product vision**
 
-Evolve Pulse from diagnostics app → **local-first Windows observability platform**.
+Evolve DiagnoseThat from diagnostics app → **local-first Windows observability platform**.
 
 Capabilities (phased under ADR-014 Observability Platform):
 
@@ -442,7 +442,7 @@ Capabilities (phased under ADR-014 Observability Platform):
 
 #### R17 — Public SDK (XL) — **third-party developers**
 
-Distinct from **Plugin SDK (R13)** (in-process/out-of-process *extensions inside Pulse*). Public SDK = **versioned client libraries** to consume Pulse from external apps.
+Distinct from **Plugin SDK (R13)** (in-process/out-of-process *extensions inside DiagnoseThat*). Public SDK = **versioned client libraries** to consume DiagnoseThat from external apps.
 
 | Language targets | C#, C++, Rust, TypeScript, Python |
 | **Expose** | MCP (client helpers), IPC (named-pipe + envelopes), Reports generators/APIs, Timeline queries, Inventory queries |
@@ -535,7 +535,7 @@ Historical beta plan (superseded):
 ## 7. Explicit non-goals (until ADR)
 
 - Theme redesign (excluded) — superseded by [ADR-012](decisions/ADR-012-midnight-visual-identity.md)
-- Embedded LLM or API keys in Pulse
+- Embedded LLM or API keys in DiagnoseThat
 - Administrative MCP tools without ADR
 - Fake inventory catalogs
 - Vendor GPU SDKs

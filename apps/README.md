@@ -1,4 +1,4 @@
-﻿# apps
+# apps
 
-Flutter applications. `pulse_app` is the Pulse Desktop UI.
+Flutter applications. `pulse_app` is the DiagnoseThat Desktop UI.
 

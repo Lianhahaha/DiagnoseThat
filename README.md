@@ -46,7 +46,7 @@ See [BUILD.md](BUILD.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## Contributing
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) first. Changes must stay observation-only (see "What Pulse is NOT" in AGENTS.md).
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md) first. Changes must stay observation-only (see "What DiagnoseThat is NOT" in AGENTS.md).
 
 ## License
 

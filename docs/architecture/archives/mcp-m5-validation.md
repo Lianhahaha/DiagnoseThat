@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.5.0`  
-**Pulse app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
 **Scope:** M5 — `diagnostics.snapshot`, `service.status`, `pulse://diagnostics/snapshot`, `pulse://mcp/status`  
 **Status:** **FROZEN** — all required gates PASS. M6 blocked until explicit start.
 

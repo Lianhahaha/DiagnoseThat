@@ -11,7 +11,7 @@ Structured JSON logs; no sensitive data; local only.
 | Component | Path |
 |-----------|------|
 | Service | `%ProgramData%\Pulse\logs\pulse-service-YYYY-MM-DD.jsonl` |
-| App | `%LOCALAPPDATA%\Pulse\logs\pulse-app-YYYY-MM-DD.jsonl` |
+| App | `%LOCALAPPDATA%\DiagnoseThat\logs\pulse-app-YYYY-MM-DD.jsonl` |
 
 ## Schema
 

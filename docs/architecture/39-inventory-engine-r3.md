@@ -11,7 +11,7 @@ Implementation may proceed under ADR-011. R3 is **complete** only when P0 + P1 +
 
 ## Architectural review (locked decisions)
 
-Verified against existing Pulse architecture (Health collectors, Envelope IPC, ADR-010 MCP):
+Verified against existing DiagnoseThat architecture (Health collectors, Envelope IPC, ADR-010 MCP):
 
 | # | Requirement | Verdict | How |
 |---|-------------|---------|-----|

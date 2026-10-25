@@ -1,6 +1,6 @@
 # Health Metrics vs Windows Task Manager
 
-Pulse System Health aims to stay within a few percentage points of Task Manager **Performance** under normal load, using official Win32 / PDH APIs only (read-only).
+DiagnoseThat System Health aims to stay within a few percentage points of Task Manager **Performance** under normal load, using official Win32 / PDH APIs only (read-only).
 
 Source: `service/pulse_service/src/collectors/health_metrics_collector.cpp`  
 Process CPU math: `service/pulse_service/src/collectors/process_metrics.cpp`  
@@ -10,7 +10,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 ## Summary of alignment changes
 
-| Metric | Pulse (current) | Task Manager Performance | Match quality |
+| Metric | DiagnoseThat (current) | Task Manager Performance | Match quality |
 |--------|-----------------|--------------------------|---------------|
 | CPU % | `\Processor Information(_Total)\% Processor Utility`, clamped to 100 | Same counter family (utility), clamped | **Aligned** |
 | Per-core CPU | `\Processor Information(*)\% Processor Utility` | Same family | **Aligned** |
@@ -38,17 +38,17 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | PDH `\Processor Information(_Total)\% Processor Utility` |
-| **Pulse calculation** | Formatted double; clamp to `[0, 100]` |
+| **DiagnoseThat API** | PDH `\Processor Information(_Total)\% Processor Utility` |
+| **DiagnoseThat calculation** | Formatted double; clamp to `[0, 100]` |
 | **Fallback** | `GetSystemTimes` busy = `(Δkernel+Δuser−Δidle)/(Δkernel+Δuser)×100` |
 | **Task Manager** | Performance tab uses **% Processor Utility** (can exceed 100% under turbo; UI clamps). Details tab still uses **% Processor Time**. |
-| **Difference** | After alignment, Pulse matches Performance, not Details. Pre–24H2 Processes tab also used Utility; May 2025 updates moved Processes toward time-based industry formula — Pulse tracks **Performance**. |
+| **Difference** | After alignment, DiagnoseThat matches Performance, not Details. Pre–24H2 Processes tab also used Utility; May 2025 updates moved Processes toward time-based industry formula — DiagnoseThat tracks **Performance**. |
 
 ### Per-core CPU
 
 | | |
 |--|--|
-| **Pulse API** | `\Processor Information(*)\% Processor Utility` (fallback `\Processor(*)\% Processor Time`) |
+| **DiagnoseThat API** | `\Processor Information(*)\% Processor Utility` (fallback `\Processor(*)\% Processor Time`) |
 | **Task Manager** | Logical processor graphs use the utility family on modern Windows |
 | **Difference** | Instance naming (`0,0` vs `0`) handled by sorting instance names |
 
@@ -56,8 +56,8 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | `GlobalMemoryStatusEx` |
-| **Pulse calculation** | used = `ullTotalPhys − ullAvailPhys` |
+| **DiagnoseThat API** | `GlobalMemoryStatusEx` |
+| **DiagnoseThat calculation** | used = `ullTotalPhys − ullAvailPhys` |
 | **Task Manager** | Same Available definition (standby + free + zero); In use ≈ Total − Available |
 | **Difference** | Typically within rounding / snapshot timing |
 
@@ -65,7 +65,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | `GetPerformanceInfo` → `CommitTotal`, `CommitLimit` × `PageSize` |
+| **DiagnoseThat API** | `GetPerformanceInfo` → `CommitTotal`, `CommitLimit` × `PageSize` |
 | **Task Manager** | Commit charge / limit |
 | **Difference** | Negligible |
 
@@ -73,7 +73,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | PDH sum: Cache Bytes + Modified Page List Bytes + Standby Cache Reserve + Normal Priority + Core/Code Bytes |
+| **DiagnoseThat API** | PDH sum: Cache Bytes + Modified Page List Bytes + Standby Cache Reserve + Normal Priority + Core/Code Bytes |
 | **Fallback** | `PERFORMANCE_INFORMATION.SystemCache × PageSize` |
 | **Task Manager** | Same PDH composition ([Memory Performance Information](https://learn.microsoft.com/en-us/windows/win32/memory/memory-performance-information)) |
 | **Difference** | Small timing skew; Core vs Code counter name varies by Windows build |
@@ -82,15 +82,15 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | PDH `\Memory\Compressed Bytes` |
+| **DiagnoseThat API** | PDH `\Memory\Compressed Bytes` |
 | **Task Manager** | Memory compression |
-| **Difference** | If the counter is missing on a build, Pulse shows `—` (never estimated) |
+| **Difference** | If the counter is missing on a build, DiagnoseThat shows `—` (never estimated) |
 
 ### Memory — Hardware reserved
 
 | | |
 |--|--|
-| **Pulse API** | `GetPhysicallyInstalledSystemMemory` (KB→bytes) − `MEMORYSTATUSEX.ullTotalPhys` |
+| **DiagnoseThat API** | `GetPhysicallyInstalledSystemMemory` (KB→bytes) − `MEMORYSTATUSEX.ullTotalPhys` |
 | **Task Manager** | Hardware reserved |
 | **Difference** | Shown only when installed ≥ usable; otherwise `—` |
 
@@ -98,7 +98,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | `GetPerformanceInfo` → `KernelPaged` / `KernelNonpaged` × `PageSize` |
+| **DiagnoseThat API** | `GetPerformanceInfo` → `KernelPaged` / `KernelNonpaged` × `PageSize` |
 | **Task Manager** | Paged pool / Non-paged pool |
 | **Difference** | Negligible snapshot skew |
 
@@ -106,7 +106,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 | | |
 |--|--|
-| **Pulse API** | PDH `\Memory\Page Faults/sec` |
+| **DiagnoseThat API** | PDH `\Memory\Page Faults/sec` |
 | **Task Manager** | Not always on Performance > Memory summary; Resource Monitor shows faults |
 | **Difference** | Rate counters need a primed PDH sample; first tick may be `—` |
 
@@ -124,7 +124,7 @@ Sample rate: ~1 Hz when a client enables health monitoring.
 
 ### Shared working set note
 
-SPI exposes `WorkingSetSize` and `WorkingSetPrivateSize` but not a dedicated “Shared” field. Pulse displays:
+SPI exposes `WorkingSetSize` and `WorkingSetPrivateSize` but not a dedicated “Shared” field. DiagnoseThat displays:
 
 `shared ≈ WorkingSetSize − WorkingSetPrivateSize`
 
@@ -134,10 +134,10 @@ This matches the usual Task Manager Details relationship without `OpenProcess` /
 
 | | |
 |--|--|
-| **Pulse API** | PDH `\GPU Engine(*)\Utilization Percentage`. The counter is per process, so each engine (`luid_…_phys_N_eng_N`) is summed over its processes; overall = busiest engine of the adapter LUID (`gpu_engine_load.cpp`) |
+| **DiagnoseThat API** | PDH `\GPU Engine(*)\Utilization Percentage`. The counter is per process, so each engine (`luid_…_phys_N_eng_N`) is summed over its processes; overall = busiest engine of the adapter LUID (`gpu_engine_load.cpp`) |
 | **Per-engine** | Busiest engine of type `3D` / `Compute` / `Copy` / `VideoDecode` / `VideoEncode` / `VideoProcessing` on that LUID |
 | **Task Manager** | Same method: an engine's utilization is the sum over its processes, and the GPU's is its busiest engine (DirectX Developer Blog, *GPUs in the Task Manager*, 2017) |
-| **Difference** | Before 1.5 Pulse took the busiest single process/engine pair, which read low when several processes shared an engine. Pulse prefers the discrete DXGI adapter for the detail panel; TM uses the user-selected GPU |
+| **Difference** | Before 1.5 DiagnoseThat took the busiest single process/engine pair, which read low when several processes shared an engine. DiagnoseThat prefers the discrete DXGI adapter for the detail panel; TM uses the user-selected GPU |
 | **All GPUs (#9)** | `HealthSample.gpus`: every DXGI adapter without `DXGI_ADAPTER_FLAG_SOFTWARE`, with load and `GPU Adapter Memory` usage per LUID. The GPU panel lists them when there is more than one |
 
 ### GPU identity / VRAM / adapter
@@ -201,44 +201,44 @@ Code: `service/pulse_service/src/collectors/gpu_adapter_info.*`, `system_overvie
 
 | | |
 |--|--|
-| **Pulse API** | `\PhysicalDisk(_Total)\Disk Read/Write Bytes/sec` |
+| **DiagnoseThat API** | `\PhysicalDisk(_Total)\Disk Read/Write Bytes/sec` |
 | **Task Manager** | Same PhysicalDisk counters for throughput |
-| **Difference** | TM also shows **Active time %** (`100 − % Idle Time`). Pulse does not expose active time yet. |
+| **Difference** | TM also shows **Active time %** (`100 − % Idle Time`). DiagnoseThat does not expose active time yet. |
 
 ### Disk capacity
 
 | | |
 |--|--|
-| **Pulse API** | `GetLogicalDriveStringsW` + `GetDiskFreeSpaceExW` per volume |
+| **DiagnoseThat API** | `GetLogicalDriveStringsW` + `GetDiskFreeSpaceExW` per volume |
 | **Policy** | Fixed volumes always listed with capacity. Removable/optical listed when media present. Network volumes listed by letter only — no `GetVolumeInformationW` / `GetDiskFreeSpaceExW` (avoids SMB hangs). |
 | **Primary summary** | Prefers `C:`, else first fixed volume → `disk_used_bytes` / `disk_total_bytes` |
 | **Task Manager** | Per selected volume |
-| **Difference** | Pulse shows **all** relevant volumes; TM focuses on the selected one |
+| **Difference** | DiagnoseThat shows **all** relevant volumes; TM focuses on the selected one |
 
 ### Physical disk throughput (per disk)
 
 | | |
 |--|--|
-| **Pulse API** | `\PhysicalDisk(*)\Disk Read/Write Bytes/sec` (excludes `_Total` for the list; `_Total` kept for aggregate sparklines) |
+| **DiagnoseThat API** | `\PhysicalDisk(*)\Disk Read/Write Bytes/sec` (excludes `_Total` for the list; `_Total` kept for aggregate sparklines) |
 | **Task Manager** | Per selected physical disk |
-| **Difference** | Pulse lists all instances; aggregate R/W still drives the main sparkline |
+| **Difference** | DiagnoseThat lists all instances; aggregate R/W still drives the main sparkline |
 
 ### Top processes (GPU / Disk side panels)
 
 | | |
 |--|--|
-| **Pulse API** | `NtQuerySystemInformation(SystemProcessInformation)` via `ntdll` |
-| **Pulse fields** | Name, PID, CPU %, **private** working set (fallback shared WS), Thread/Handle counts |
+| **DiagnoseThat API** | `NtQuerySystemInformation(SystemProcessInformation)` via `ntdll` |
+| **DiagnoseThat fields** | Name, PID, CPU %, **private** working set (fallback shared WS), Thread/Handle counts |
 | **Task Manager** | Same system-process snapshot family (no per-process `OpenProcess`) |
 | **Difference** | Side panels still show **top-N** lists. **CPU and Memory** panels use the full inventory + app groups. |
 
 ### Validation methodology (Memory)
 
-1. Run `scripts/validate_memory_metrics.ps1` — prints the same Win32/PDH formulas Pulse uses.
+1. Run `scripts/validate_memory_metrics.ps1` — prints the same Win32/PDH formulas DiagnoseThat uses.
 2. Open Task Manager → Performance → Memory and Resource Monitor → Memory at the same moment.
 3. Compare Overview rows (Used/Total, Available, Committed, Cached, Compression, Hardware Reserved, pools).
-4. For a known PID: compare Pulse child Private WS to TM Details **Memory (private working set)** / System Informer Private Bytes / Working Set Private.
-5. For an app group: sum private WS of children; Pulse collapsed row must equal that sum (not the first child’s value).
+4. For a known PID: compare DiagnoseThat child Private WS to TM Details **Memory (private working set)** / System Informer Private Bytes / Working Set Private.
+5. For an app group: sum private WS of children; DiagnoseThat collapsed row must equal that sum (not the first child’s value).
 
 Acceptable delta: sub-second sample skew (± a few MB). Any systematic gap means wrong API or formula — fix, do not average.
 
@@ -247,7 +247,7 @@ Acceptable delta: sub-second sample skew (± a few MB). Any systematic gap means
 | | |
 |--|--|
 | **Identity** | **(PID + CreateTime)** for CPU / Disk / Net baselines and inventory merge. PID recycle resets metrics (System Informer process-record model). |
-| **Pulse API** | Full SPI walk each sample; delta push (~1 Hz, full resync ~30 s) |
+| **DiagnoseThat API** | Full SPI walk each sample; delta push (~1 Hz, full resync ~30 s) |
 | **CPU (default)** | **Time-based:** Δ(Kernel+User) / Δt / N_logical × 100, clamped. Same family as System Informer time-based / classic TM Details. |
 | **CPU (optional)** | **Cycle-based:** ΔCycleTime / (Σ process ΔCycle + Σ idle ΔCycle) × 100. Implemented in `ProcessCpuCalculator`; default remains time-based (`SetProcessCpuMode`). |
 | **Memory** | Prefer SPI `WorkingSetPrivateSize`; fall back to `WorkingSetSize` if private is zero. |
@@ -269,15 +269,15 @@ Code: `service/pulse_service/src/collectors/process_metrics.{hpp,cpp}`.
 
 | | |
 |--|--|
-| **Pulse API** | `GetIfTable2` + `GetAdaptersAddresses` + `GetIfEntry2` + WLANAPI |
-| **Pulse calculation** | Δoctets / Δseconds; session peak/avg; util vs TransmitLinkSpeed |
+| **DiagnoseThat API** | `GetIfTable2` + `GetAdaptersAddresses` + `GetIfEntry2` + WLANAPI |
+| **DiagnoseThat calculation** | Δoctets / Δseconds; session peak/avg; util vs TransmitLinkSpeed |
 | **Difference** | Adapter selection can diverge from TM user selection; Wi‑Fi fields only when connected wireless |
 
 See expanded Network section above for static identity fields.
 
 ### Per-process metrics
 
-| Metric | Pulse | TM / System Informer | Remaining gap |
+| Metric | DiagnoseThat | TM / System Informer | Remaining gap |
 |--------|-------|----------------------|---------------|
 | CPU | Time-based SPI (default); cycle optional | SI cycle default; TM may use Utility | Default ≠ Utility |
 | Memory | **Private** WS from SPI | Private WS | Aligned when private ≠ 0 |
@@ -287,7 +287,7 @@ See expanded Network section above for static identity fields.
 
 ### Per-process network — API decision (ESTATS removed)
 
-Runtime investigation (2026-08) proved `GetPerTcpConnectionEStats` is **not** a correct source for Pulse:
+Runtime investigation (2026-08) proved `GetPerTcpConnectionEStats` is **not** a correct source for DiagnoseThat:
 
 | Approach | PID attribution | Needs elevation | Works as LocalService | Robustness | Used by |
 |----------|-----------------|-----------------|----------------------|------------|---------|
@@ -300,7 +300,7 @@ Runtime investigation (2026-08) proved `GetPerTcpConnectionEStats` is **not** a 
 
 ### Process network via ETW (Phase 2)
 
-Real-time Pulse-owned session `PulseHealthNet` on `Microsoft-Windows-Kernel-Network` send/recv events; aggregate cumulative bytes by PID; publish rates on `HealthProcessEntry` (`net_bps`, `net_upload_bps`, `net_download_bps`, `net_bytes_total`). Privilege model stays explicit — never bypass Windows security. Timeline remains Event Log–only.
+Real-time DiagnoseThat-owned session `PulseHealthNet` on `Microsoft-Windows-Kernel-Network` send/recv events; aggregate cumulative bytes by PID; publish rates on `HealthProcessEntry` (`net_bps`, `net_upload_bps`, `net_download_bps`, `net_bytes_total`). Privilege model stays explicit — never bypass Windows security. Timeline remains Event Log–only.
 
 ### Temperatures & hardware sensors (Phase 3)
 
@@ -330,7 +330,7 @@ Code: `service/pulse_service/src/collectors/hardware_sensors_collector.*`.
 
 ## Verification
 
-Compare Pulse with **Task Manager** and **System Informer** (~30 s idle + light load):
+Compare DiagnoseThat with **Task Manager** and **System Informer** (~30 s idle + light load):
 
 | Check | Expectation |
 |-------|-------------|
@@ -343,7 +343,7 @@ Compare Pulse with **Task Manager** and **System Informer** (~30 s idle + light 
 | PID recycle | Relaunch same image: metrics reset (no stuck baseline) |
 | Inventory UI | CPU: stable name order; Memory: private-WS sort within sections |
 
-### Example host snapshot (validation script, same APIs as Pulse)
+### Example host snapshot (validation script, same APIs as DiagnoseThat)
 
 | Metric | Windows API | Example raw read |
 |--------|-------------|------------------|

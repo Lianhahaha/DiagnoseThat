@@ -36,7 +36,7 @@ Basis: Partner Center simulated reviewer report (approval score 72/100 improveme
 
 ## Explicit non-changes
 
-- No architecture redesign of Pulse UI/service split  
+- No architecture redesign of DiagnoseThat UI/service split  
 - No invented security mechanisms (PID allowlists, mTLS, etc.)  
 - No claim that `internetClient` is required  
 - `apps/pulse_app/pubspec.yaml` capability list **not** edited in this doc pass (document recommends removal for a follow-up packaging change)

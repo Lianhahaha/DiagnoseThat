@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.7.0`  
-**Pulse app/service stamp:** `0.2.1-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta`  
 **Scope:** M7 — MCP productization (Settings, Diagnostics, installer, client registration)  
 **Status:** **FROZEN** — gates below. M8 blocked until explicit start.  
 **Constraint:** No new MCP tools / protocol / collectors.
@@ -30,7 +30,7 @@
 |------|--------|
 | Policy write `%LOCALAPPDATA%\Pulse\mcp\policy.json` | Pass |
 | Status heartbeats `status.json` | Pass |
-| `--status-daemon` for Start with Pulse | Pass |
+| `--status-daemon` for Start with DiagnoseThat | Pass |
 | Provider abstraction (Cursor / Claude / ChatGPT stub) | Pass |
 | Config backup + JSON validate | Pass |
 | Uninstall `--cleanup-registrations` | Pass |
@@ -38,11 +38,11 @@
 
 ## Manual checklist (sign at freeze)
 
-- [ ] Clean install Setup.exe → Pulse + PulseService + `PulseMCP.exe` + `runtime\node.exe` present (no system Node.js required)
+- [ ] Clean install Setup.exe → DiagnoseThat + PulseService + `PulseMCP.exe` + `runtime\node.exe` present (no system Node.js required)
 - [ ] Enable MCP → `mcp.self` works from Cursor after Register
 - [ ] Unregister removes only `pulse` entry; other servers remain
 - [ ] Upgrade preserves `policy.json`
-- [ ] Uninstall runs registration cleanup for Pulse-owned markers
+- [ ] Uninstall runs registration cleanup for DiagnoseThat-owned markers
 - [ ] Disable MCP → tools return `POLICY_DISABLED`
 - [ ] Diagnostics MCP section updates while status-daemon or Cursor session runs
 - [ ] Settings persistence across app restart

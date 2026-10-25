@@ -69,7 +69,7 @@ Sample: 50 events (System + Application, 25 each).
 
 ### Side-by-side field mapping (Application Error 1000, RecordId 22569)
 
-| Event Viewer / Wevtapi | Pulse details / wire | Match policy |
+| Event Viewer / Wevtapi | DiagnoseThat details / wire | Match policy |
 |------------------------|----------------------|--------------|
 | ProviderName `Application Error` | Provider | Exact when collected |
 | Id `1000` | Event ID | Exact |
@@ -91,7 +91,7 @@ Sample: 50 events (System + Application, 25 each).
 | `app-crash-wer` | Application Error **1000**, WER **1001** | Yes (multiple recent records) |
 | `unexpected-shutdown` | Kernel-Power **41**, EventLog **6008** | Yes (paired within seconds on 2026-07-19) |
 | `display-tdr-4101` | Display **4101** | No recent hits on this host |
-| `service-crash-recover` | SCM **7031** → **7036** | No recent 7031; Event ID 7036 also used by other providers (e.g. VfpExt) — Pulse requires SCM provider substring (FP note in doc 37) |
+| `service-crash-recover` | SCM **7031** → **7036** | No recent 7031; Event ID 7036 also used by other providers (e.g. VfpExt) — DiagnoseThat requires SCM provider substring (FP note in doc 37) |
 
 Rules are verified against **Microsoft-documented IDs** and host presence where available. Absence of Display 4101 / SCM 7031 on one machine is not a rule failure.
 
@@ -153,7 +153,7 @@ C:\dev\Pulse-service-build-r1\event_intelligence_tests.exe
 flutter build windows --release
 ```
 
-**Verified at freeze (2026-08-02):** Timeline Flutter suite PASS; `event_intelligence_tests OK` (Release); `PulseService` Release link OK; `flutter build windows --release` → `Pulse.exe` OK.
+**Verified at freeze (2026-08-02):** Timeline Flutter suite PASS; `event_intelligence_tests OK` (Release); `PulseService` Release link OK; `flutter build windows --release` → `DiagnoseThat.exe` OK.
 
 ---
 

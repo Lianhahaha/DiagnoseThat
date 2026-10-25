@@ -1,4 +1,4 @@
-﻿# README
+# README
 
-Pulse Flutter Desktop client. TASK-001: shell + IPC Ping/Pong only.
+DiagnoseThat Flutter Desktop client. TASK-001: shell + IPC Ping/Pong only.
 

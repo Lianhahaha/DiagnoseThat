@@ -1,4 +1,4 @@
-# Architecture Review — Pulse v1
+# Architecture Review — DiagnoseThat v1
 
 **Date:** 2026-07-27  
 **Updated:** 2026-07-27 — **P0 recommendations accepted**; architecture docs revised for Event Log–only v1  

@@ -8,7 +8,7 @@
 
 ## Context
 
-Pulse must observe Windows continuously, including when the UI is closed. The collector must survive user logoff and system events. Privilege handling for ETW and Event Log must be centralized.
+DiagnoseThat must observe Windows continuously, including when the UI is closed. The collector must survive user logoff and system events. Privilege handling for ETW and Event Log must be centralized.
 
 ## Decision
 

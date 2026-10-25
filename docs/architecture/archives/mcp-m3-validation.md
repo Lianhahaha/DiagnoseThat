@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-02  
 **PulseMCP version:** `0.3.0`  
-**Pulse app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
+**DiagnoseThat app/service stamp:** `0.2.1-beta` / service `0.2.0-beta`  
 **Scope:** M3 — `process.list`, `process.search`, `process.details`  
 **Status:** **FROZEN** — all required gates PASS. M4 blocked until next milestone gate.
 
@@ -47,13 +47,13 @@ cd apps/pulse_mcp && npm run validate:m3
 
 ## Cursor (required) — PASS
 
-Server: `project-0-Pulse-pulse` @ `mcpServer` **0.3.0**.
+Server: `project-0-DiagnoseThat-pulse` @ `mcpServer` **0.3.0**.
 
 | Check | Result | Notes |
 |-------|--------|-------|
 | `mcp.self` | Pass | namespaces include `process`; tools include all three |
 | `process.list` | Pass | count=15, truncated, stable ids, ISO timestamps |
-| `process.search` | Pass | query=`Pulse` → PulseService.exe |
+| `process.search` | Pass | query=`DiagnoseThat` → PulseService.exe |
 | `process.details` | Pass | pid=26352 PulseService; parent/user/integrity/elevated |
 | `PROCESS_NOT_FOUND` | Pass | pid=2147483646 |
 

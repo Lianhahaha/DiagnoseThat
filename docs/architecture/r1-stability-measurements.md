@@ -2,13 +2,13 @@
 
 **Date:** 2026-08-01  
 **Machine:** development workstation (not a clean VM)  
-**Build under test:** running installed/dev Pulse UI + PulseService; service rebuilt with drop-oldest fix at `C:\dev\Pulse-service-build-r1` (not yet redeployed to SCM for these samples).
+**Build under test:** running installed/dev DiagnoseThat UI + PulseService; service rebuilt with drop-oldest fix at `C:\dev\Pulse-service-build-r1` (not yet redeployed to SCM for these samples).
 
 ## Measured (honest)
 
 | Metric | Target | Observed | Notes |
 |--------|--------|----------|-------|
-| Idle UI Working Set (`Pulse`) | &lt; 150 MB | **155.7 MB** | Over target by ~6 MB — do not “optimize blindly”; track in soak |
+| Idle UI Working Set (`DiagnoseThat`) | &lt; 150 MB | **155.7 MB** | Over target by ~6 MB — do not “optimize blindly”; track in soak |
 | PulseService Working Set | track | **25.2 MB** | SCM Running |
 | PulseMCP | track | not running | Dev MCP not launched |
 | Diagnostics ping smoke | SMOKE_OK | **SMOKE_OK** | `pulse_diagnostics_ping` against live pipe |

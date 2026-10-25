@@ -88,7 +88,7 @@ Per-event explanations (stop code name, power button, power loss, WHEA hardware 
 
 ## Explicitly not correlated yet
 
-Multi-step “driver → DWM → recovery” chains require additional documented Event IDs present in the user’s Timeline. Until those IDs are listed here with citations, Pulse will not invent sibling rows.
+Multi-step “driver → DWM → recovery” chains require additional documented Event IDs present in the user’s Timeline. Until those IDs are listed here with citations, DiagnoseThat will not invent sibling rows.
 
 ---
 

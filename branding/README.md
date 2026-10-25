@@ -1,6 +1,6 @@
 # Branding
 
-Pulse visual identity lives here.
+DiagnoseThat visual identity lives here.
 
 | Path | Contents |
 |---|---|

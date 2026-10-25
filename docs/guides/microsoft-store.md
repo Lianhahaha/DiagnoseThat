@@ -1,16 +1,16 @@
-# Microsoft Store packaging (Pulse Diagnostics)
+# Microsoft Store packaging (DiagnoseThat)
 
-Store ID: **9PNDTLNTJ82T**
+Store ID: **n/a**
 
 ## Partner Center identity (authoritative)
 
 | Field | Value |
 |-------|--------|
-| Package identity name | `Regncreative.PulseDiagnostics` |
+| Package identity name | `Lianhahaha.DiagnoseThat` |
 | Publisher | `CN=72B69D57-C9E8-4280-AF56-B142286B0D20` |
 | Publisher display name | `Regncreative` |
-| Display name | `Pulse Diagnostics` |
-| Package family name | `Regncreative.PulseDiagnostics_epm7gp6hnh3h0` |
+| Display name | `DiagnoseThat` |
+| Package family name | `Lianhahaha.DiagnoseThat_epm7gp6hnh3h0` |
 
 Configured in [`apps/pulse_app/pubspec.yaml`](../../apps/pulse_app/pubspec.yaml) under `msix_config`.
 
@@ -58,7 +58,7 @@ Prerequisites: Flutter stable, VS C++ Build Tools, Windows 10 SDK (`MakeAppx` re
 
 The script **fails loudly** if `PulseService.exe` cannot be built/embedded. After packing it unpacks the MSIX and runs [`validate_msix_store.ps1`](../../tools/scripts/validate_msix_store.ps1), which requires:
 
-- `Pulse.exe`
+- `DiagnoseThat.exe`
 - `service\PulseService.exe`
 - `desktop6:Service` with `StartAccount="localService"`
 - `packagedServices` capability
@@ -88,7 +88,7 @@ Outputs (`dist/msix/`):
 
 Short paste for the capability form (summary only — attach the whitepaper for detail):
 
-> Pulse Diagnostics is a read-only Windows observability application. Continuous collection of Windows Event Log data, system health metrics, and hardware/inventory diagnostics runs in a background Win32 service (`PulseService`) under the Local Service account so observation continues independently of the Flutter UI process lifecycle and does not require elevating the interactive user session. The service uses only officially supported Windows APIs, never injects into processes, and writes operational state under ProgramData—not into the package install directory. We request the `packagedServices` restricted capability so Microsoft Store can install and register this Local Service packaged service via the AppxManifest (`desktop6:Service`, `StartAccount=localService`). We do not require `localSystemServices` or Local System. Without this capability, the Store package cannot provide the core diagnostics experience and fails certification as an unusable feature.
+> DiagnoseThat is a read-only Windows observability application. Continuous collection of Windows Event Log data, system health metrics, and hardware/inventory diagnostics runs in a background Win32 service (`PulseService`) under the Local Service account so observation continues independently of the Flutter UI process lifecycle and does not require elevating the interactive user session. The service uses only officially supported Windows APIs, never injects into processes, and writes operational state under ProgramData—not into the package install directory. We request the `packagedServices` restricted capability so Microsoft Store can install and register this Local Service packaged service via the AppxManifest (`desktop6:Service`, `StartAccount=localService`). We do not require `localSystemServices` or Local System. Without this capability, the Store package cannot provide the core diagnostics experience and fails certification as an unusable feature.
 
 Checklist and submission notes: [partner-center-packagedServices.md](partner-center-packagedServices.md).
 

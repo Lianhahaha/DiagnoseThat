@@ -2,7 +2,7 @@
 
 ## Status: Future milestone (M3) — **not in v1 execution plan**
 
-Pulse v1 does **not** implement WMI/MI adapters or enable WMI in config.
+DiagnoseThat v1 does **not** implement WMI/MI adapters or enable WMI in config.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Canonical `PulseEvent` for Pulse. v1 **produces** only `SOURCE_EVENT_LOG`. Schema remains source-agnostic for future milestones.
+Canonical `PulseEvent` for DiagnoseThat. v1 **produces** only `SOURCE_EVENT_LOG`. Schema remains source-agnostic for future milestones.
 
 ---
 

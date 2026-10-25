@@ -13,7 +13,7 @@ PulseService (Windows service — independent lifecycle)
     |
     | Named Pipe IPC
     v
-Pulse.exe (Flutter desktop UI)
+DiagnoseThat.exe (Flutter desktop UI)
     |
     +-- Main window (may be hidden)
     +-- System tray icon + context menu
@@ -21,11 +21,11 @@ Pulse.exe (Flutter desktop UI)
     +-- local_notifier (Windows toast, local)
 ```
 
-| Action | Pulse.exe | PulseService |
+| Action | DiagnoseThat.exe | PulseService |
 |--------|-----------|--------------|
 | Window Close + Background Mode **ON** | Hide to tray; process stays alive | Unchanged |
 | Window Close + Background Mode **OFF** | Exit | Unchanged |
-| Tray → **Exit Pulse** | Exit | Unchanged |
+| Tray → **Exit DiagnoseThat** | Exit | Unchanged |
 | Uninstall / SCM stop | N/A from tray exit | Only via intentional service lifecycle UI / installer |
 
 **Never** stop, uninstall, or reconfigure PulseService because the UI hid or exited.
@@ -34,9 +34,9 @@ Pulse.exe (Flutter desktop UI)
 
 ## Tray lifecycle
 
-- Icon: bundled Pulse `app_icon.ico` (tooltip: `Pulse Diagnostics`).
+- Icon: bundled DiagnoseThat `app_icon.ico` (tooltip: `DiagnoseThat`).
 - Left click: restore / focus main window.
-- Right click: context menu (Open, diagnostic pages, Settings, Pause Notifications, Background Mode, Exit Pulse).
+- Right click: context menu (Open, diagnostic pages, Settings, Pause Notifications, Background Mode, Exit DiagnoseThat).
 - Checkboxes reflect `backgroundMode` and `notificationsPaused` from `SettingsController`.
 
 Package: [`tray_manager`](https://pub.dev/packages/tray_manager) + `menu_base`.
@@ -112,7 +112,7 @@ UI: Settings → **Background**.
 
 - Observation only; no injection / hooks / OS patching.
 - Notifications are local; no external notification backend.
-- Exiting Pulse.exe never implies stopping PulseService.
+- Exiting DiagnoseThat.exe never implies stopping PulseService.
 
 ---
 
@@ -121,4 +121,4 @@ UI: Settings → **Background**.
 - Cooldown duration updates apply to future cooling intervals (engine `updateCooldown`).
 - Event Log alerts require live monitoring / critical classification already present on the wire event.
 - Tray / toast plugins are Windows-desktop specific; unit tests cover the FSM and close policy without plugins.
-- Manual verification required for tray icon, toast click-through, and “service still running after Exit Pulse”.
+- Manual verification required for tray icon, toast click-through, and “service still running after Exit DiagnoseThat”.

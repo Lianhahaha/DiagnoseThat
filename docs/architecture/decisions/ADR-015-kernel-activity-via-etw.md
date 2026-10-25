@@ -29,10 +29,10 @@ A kernel driver needs a company EV certificate, Microsoft attestation signing, H
 ## Decision
 
 1. **ETW only. No kernel driver.**
-2. **Tier 1 first** (target 1.5): a Pulse-owned real-time session under LocalService for process lifecycle (`Microsoft-Windows-Kernel-Process`: start, exit with exit code, image load), shown as human Timeline events ("Chrome started", "Chrome exited (code 0)") and correlated with crash events (WER, bug checks; see the crash explainer).
+2. **Tier 1 first** (target 1.5): a DiagnoseThat-owned real-time session under LocalService for process lifecycle (`Microsoft-Windows-Kernel-Process`: start, exit with exit code, image load), shown as human Timeline events ("Chrome started", "Chrome exited (code 0)") and correlated with crash events (WER, bug checks; see the crash explainer).
 3. **Later tier 1 domains** (file, registry, network activity) are opt-in per domain, filtered by keywords and process, and off by default.
 4. **Tier 2 is on demand only:** the user starts a time-boxed "deep capture" (for example 30–60 s) that asks for UAC, records, stops and is explained. No permanent LocalSystem service; `localSystemServices` is not requested for the Store.
-5. **Session rules** (same as ADR-009): Pulse-named sessions, at most two at a time (trace sessions are a limited resource shared by every app; only 8 system logger sessions can run, two of them reserved by Windows); stop an orphaned session by name on start; per-instance names so two Pulse processes never stop each other's session.
+5. **Session rules** (same as ADR-009): DiagnoseThat-named sessions, at most two at a time (trace sessions are a limited resource shared by every app; only 8 system logger sessions can run, two of them reserved by Windows); stop an orphaned session by name on start; per-instance names so two DiagnoseThat processes never stop each other's session.
 6. **Budgets** (AGENTS.md): idle CPU near zero, RAM < 150 MB. Lost events (buffer overruns) are counted and shown in Diagnostics, never hidden. Event decoding happens off the ETW callback thread.
 7. **Privacy:** file paths, registry keys and command lines are personal data; they stay on the PC and go through the export masking (`PersonalDataRedactor`, Settings → Privacy).
 8. Decode events through TDH with field names, never fixed offsets: kernel event layouts differ between Windows 10 and 11.

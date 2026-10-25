@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Pulse is a read-only Windows observability platform. v1 proves one stable pipeline:
+DiagnoseThat is a read-only Windows observability platform. v1 proves one stable pipeline:
 
 **Windows Event Log → Collector → IPC → Timeline → Human-readable events.**
 
-Pulse never modifies operating system behavior.
+DiagnoseThat never modifies operating system behavior.
 
 ---
 
@@ -40,7 +40,7 @@ ETW, WMI, and plugins are **out of v1 scope**. See future docs [20](20-etw-integ
 
 | Principle | Implication |
 |-----------|-------------|
-| Read-only | No writes to registry, files, services, or processes (except Pulse’s own data) |
+| Read-only | No writes to registry, files, services, or processes (except DiagnoseThat’s own data) |
 | Local-first | All data stays on the machine |
 | Offline capable | No network required |
 | No telemetry | No analytics, tracking, or cloud |

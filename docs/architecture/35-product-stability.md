@@ -8,7 +8,7 @@
 
 ## Purpose
 
-Make Pulse **production-stable** before Timeline Intelligence (R2) and later platforms: truthful diagnostics, measured budgets, repeatable validation, and overnight soak.
+Make DiagnoseThat **production-stable** before Timeline Intelligence (R2) and later platforms: truthful diagnostics, measured budgets, repeatable validation, and overnight soak.
 
 ---
 
@@ -54,8 +54,8 @@ Diagnostics shows a **Performance budgets** card comparing live samples to these
 Repeatable checks (check off for each release train):
 
 ### Cold start
-1. Reboot or ensure Pulse.exe not running; PulseService Running.
-2. Launch Pulse from Start / installer shortcut.
+1. Reboot or ensure DiagnoseThat.exe not running; PulseService Running.
+2. Launch DiagnoseThat from Start / installer shortcut.
 3. Record time to Connected + first Timeline/Health paint.
 4. Note UI RSS after 30 s idle via Diagnostics or `measure_performance.ps1`.
 
@@ -75,14 +75,14 @@ Repeatable checks (check off for each release train):
 ### Overnight soak (≥ 8 h)
 1. Rebuild service tools so `pulse_diagnostics_ping.exe` prints `SOAK_METRICS` (current tree).
 2. `powershell -ExecutionPolicy Bypass -File .\tools\scripts\soak_overnight.ps1 -Hours 8`
-3. Keep Pulse UI open; machine awake (disable sleep if needed).
+3. Keep DiagnoseThat UI open; machine awake (disable sleep if needed).
 4. Review **final reports**:
    - `tools/soak-results/soak-report-<stamp>.json`
    - `tools/soak-results/soak-report-<stamp>.md`
 5. Archive `artifacts/soak/<stamp>/` with the reports.
 6. Accept only **PASS** or explicitly justified **PASS WITH WARNINGS**. **FAIL** is an R1 regression.
 
-Verdict fields include runtime, uptimes, CPU/memory peak & growth, queue overflows (`live_events_dropped`), subscription reconnects, service restarts, crash dumps, and Pulse-related Event Log hits.
+Verdict fields include runtime, uptimes, CPU/memory peak & growth, queue overflows (`live_events_dropped`), subscription reconnects, service restarts, crash dumps, and DiagnoseThat-related Event Log hits.
 
 ### Installer / upgrade
 1. Clean VM or secondary PC: install current Setup.exe ([25](25-beta-release.md)).
@@ -90,11 +90,11 @@ Verdict fields include runtime, uptimes, CPU/memory peak & growth, queue overflo
 3. Upgrade over previous beta when available; service still healthy.
 
 ### Shutdown
-1. Exit Pulse UI; service remains Running (expected).
+1. Exit DiagnoseThat UI; service remains Running (expected).
 2. Optional: stop service cleanly; no orphaned high-CPU threads.
 
 ### Sleep / wake
-1. Sleep PC ≥ 2 minutes with Pulse open.
+1. Sleep PC ≥ 2 minutes with DiagnoseThat open.
 2. Wake; confirm IPC recovers or offline recovery works; no crash.
 
 ### Monitor hot-plug
@@ -128,7 +128,7 @@ Optional local WER dumps (developer machines):
 New-Item -Force -ItemType Directory "$env:LOCALAPPDATA\CrashDumps" | Out-Null
 ```
 
-See Microsoft documentation for `LocalDumps` registry keys. Pulse does not ship a crash reporter (no telemetry).
+See Microsoft documentation for `LocalDumps` registry keys. DiagnoseThat does not ship a crash reporter (no telemetry).
 
 ---
 

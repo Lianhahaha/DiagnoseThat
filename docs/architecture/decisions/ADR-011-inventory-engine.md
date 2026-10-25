@@ -14,7 +14,7 @@
 
 Roadmap R3 requires a read-only **Inventory Engine** covering system description domains (services, drivers, software, USB, PCI, and phased hardware catalogs).
 
-Today Pulse already collects overlapping **static / live** hardware facts under **System Health** (`HealthStaticInfo`, `HealthSample`, process inventory). Without a clear boundary, R3 risks duplicate collectors and Health cadence bleed into Inventory.
+Today DiagnoseThat already collects overlapping **static / live** hardware facts under **System Health** (`HealthStaticInfo`, `HealthSample`, process inventory). Without a clear boundary, R3 risks duplicate collectors and Health cadence bleed into Inventory.
 
 ADR-010 reserves the full Windows service catalog for Inventory; `service.status` remains PulseService identity until `inventory.services` ships.
 

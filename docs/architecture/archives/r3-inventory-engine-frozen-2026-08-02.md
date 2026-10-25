@@ -7,7 +7,7 @@
 **Roadmap:** [34-engineering-roadmap.md](../34-engineering-roadmap.md)  
 **Prior:** [r3-inventory-final-validation-report-2026-08-02.md](r3-inventory-final-validation-report-2026-08-02.md)  
 **Native capture:** [inventory-spotcheck-2026-08-02_11-38-51.md](../../tools/validation-results/inventory-spotcheck-2026-08-02_11-38-51.md)  
-**Pulse dump:** [inventory-dump-release.txt](../../tools/validation-results/inventory-dump-release.txt)  
+**DiagnoseThat dump:** [inventory-dump-release.txt](../../tools/validation-results/inventory-dump-release.txt)  
 **Release smoke:** [inventory-smoke-release.txt](../../tools/validation-results/inventory-smoke-release.txt)
 
 Constitution: observation only; Inventory describes; Health measures; no invented rows.
@@ -29,8 +29,8 @@ Fixes applied during freeze validation (same day):
 
 | Artifact | Path | Evidence |
 |----------|------|----------|
-| PulseService Release | `C:\dev\Pulse-service-build-r3-release\PulseService.exe` (~827 KB) | Built `CMAKE_BUILD_TYPE=Release`; installed to `C:\Program Files\Pulse\service\PulseService.exe`; SCM RUNNING |
-| Pulse UI Release | `apps/pulse_app/build/windows/x64/runner/Release/Pulse.exe` (via `C:\dev\Pulse-src` junction) | `flutter build windows --release` OK |
+| PulseService Release | `C:\dev\Pulse-service-build-r3-release\PulseService.exe` (~827 KB) | Built `CMAKE_BUILD_TYPE=Release`; installed to `C:\Program Files\DiagnoseThat\service\PulseService.exe`; SCM RUNNING |
+| DiagnoseThat UI Release | `apps/pulse_app/build/windows/x64/runner/Release/DiagnoseThat.exe` (via `C:\dev\DiagnoseThat-src` junction) | `flutter build windows --release` OK |
 | Tests | Release `pulse_wire_tests`, `inventory_engine_smoke_tests` | OK — all 16 domains |
 
 ---
@@ -39,12 +39,12 @@ Fixes applied during freeze validation (same day):
 
 Host: SINAN / Windows 11 Pro — 2026-08-02.
 
-| Domain | Pulse status | Pulse evidence | Native source | Match |
+| Domain | DiagnoseThat status | DiagnoseThat evidence | Native source | Match |
 |--------|--------------|----------------|---------------|-------|
 | Services | partial (limit) | SCM names present | services.msc / Get-Service (296) | PASS (subset/limit documented) |
 | Drivers | partial (limit) | SCM driver keys | Win32_SystemDriver (433) | PASS (SCM subset ≠ Driver Store) |
 | Software | partial (limit) | Uninstall keys | HKLM Uninstall (143) | PASS (HKCU/Store omitted per ADR) |
-| USB | available (18) | SetupAPI USB | Device Manager USB present (12 class) | PASS (Pulse includes hubs/interfaces) |
+| USB | available (18) | SetupAPI USB | Device Manager USB present (12 class) | PASS (DiagnoseThat includes hubs/interfaces) |
 | PCI | available (43) | SetupAPI PCI | Device Manager PCI | PASS |
 | Displays | available (2) | Viseo223DX, ASUS VG247Q1A | Monitor PnP=2 | PASS |
 | Audio | available (3) | MEDIA class | MEDIA PnP=3 | PASS |
@@ -111,7 +111,7 @@ Automated desktop capture from the agent session is unreliable (session isolatio
 
 ## Freeze actions completed
 
-- [x] Release PulseService + Release Pulse.exe built and verified  
+- [x] Release PulseService + Release DiagnoseThat.exe built and verified  
 - [x] Native spot-check recorded  
 - [x] Mismatches fixed (memory ids, storage enrichment)  
 - [x] Reports SSOT verified  
