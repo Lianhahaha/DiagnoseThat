@@ -186,8 +186,8 @@ int wmain() {
     if (reply.request_id != 0) continue;
     if (!std::holds_alternative<pulse::ipc::TimelineEvent>(reply.body)) continue;
     const auto& ev = std::get<pulse::ipc::TimelineEvent>(reply.body);
-    if (ev.provider_name == "Pulse.Diagnostics" ||
-        ev.channel == "Pulse.Diagnostics" ||
+    if (ev.provider_name == "DiagnoseThat.Diagnostics" ||
+        ev.channel == "DiagnoseThat.Diagnostics" ||
         ev.title.find("test") != std::string::npos ||
         ev.title.find("Test") != std::string::npos ||
         ev.category == "diagnostics") {

@@ -1094,14 +1094,14 @@ void IpcServer::InjectTestEvent() {
   event.timestamp_unix_ms = now;
   event.timestamp_iso = "";
   event.severity = ipc::Severity::Info;
-  event.channel = "Pulse";
-  event.provider_name = "Pulse.Diagnostics";
+  event.channel = "DiagnoseThat";
+  event.provider_name = "DiagnoseThat.Diagnostics";
   event.win_event_id = 0;
   event.record_id = 0;
   event.computer_name = "";
   event.title = "Diagnostics test event";
   event.summary =
-      "Synthetic event generated from Pulse Diagnostics. "
+      "Synthetic event generated from DiagnoseThat. "
       "This was not written to the Windows Event Log.";
   event.technical_summary =
       "InjectDiagnosticsTestEvent — UI/pipeline verification only.";

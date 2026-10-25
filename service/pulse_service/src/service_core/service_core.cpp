@@ -195,7 +195,7 @@ int InstallService() {
     }
   } else {
     svc = CreateServiceW(
-        scm, L"PulseService", L"Pulse", SERVICE_ALL_ACCESS,
+        scm, L"PulseService", L"DiagnoseThat", SERVICE_ALL_ACCESS,
         SERVICE_WIN32_OWN_PROCESS, SERVICE_AUTO_START, SERVICE_ERROR_NORMAL,
         binary_path.c_str(), nullptr, nullptr, nullptr, L"NT AUTHORITY\\LocalService",
         nullptr);
@@ -208,7 +208,7 @@ int InstallService() {
   }
 
   SERVICE_DESCRIPTIONW desc{};
-  wchar_t text[] = L"Read-only Windows diagnostics collector for Pulse";
+  wchar_t text[] = L"Read-only Windows diagnostics collector for DiagnoseThat";
   desc.lpDescription = text;
   ChangeServiceConfig2W(svc, SERVICE_CONFIG_DESCRIPTION, &desc);
 

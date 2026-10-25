@@ -11,8 +11,8 @@
   GitHub / Inno Setup packaging is unchanged (package_beta.ps1 + DiagnoseThat.iss).
 
   Outputs under dist/msix/:
-    PulseDiagnostics-1.5.0-Store.msix
-    PulseDiagnostics-1.5.0-Store.msixupload
+    DiagnoseThat-1.5.0-Store.msix
+    DiagnoseThat-1.5.0-Store.msixupload
     AppxManifest.identity.txt
     store-validation-report.txt
 #>
@@ -20,12 +20,12 @@ $ErrorActionPreference = "Stop"
 
 $Version = "1.5.0"
 $MsixVersion = "1.5.0.0"
-$ExpectedIdentity = "Regncreative.PulseDiagnostics"
+$ExpectedIdentity = "Lianhahaha.DiagnoseThat"
 $ExpectedPublisher = "CN=72B69D57-C9E8-4280-AF56-B142286B0D20"
-$ExpectedDisplayName = "DiagnoseThat Diagnostics"
-$ExpectedPublisherDisplay = "Regncreative"
-$ExpectedPfn = "Regncreative.PulseDiagnostics_epm7gp6hnh3h0"
-$StoreId = "9PNDTLNTJ82T"
+$ExpectedDisplayName = "DiagnoseThat"
+$ExpectedPublisherDisplay = "Lianhahaha"
+$ExpectedPfn = "Lianhahaha.DiagnoseThat_epm7gp6hnh3h0"
+$StoreId = "n/a"
 $ServiceRelPath = "service\PulseService.exe"
 
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -274,7 +274,7 @@ try {
     --publisher $ExpectedPublisher `
     --version $MsixVersion `
     --output-path $outDir `
-    --output-name "PulseDiagnostics-$Version-Store"
+    --output-name "DiagnoseThat-$Version-Store"
   if ($LASTEXITCODE -ne 0) { throw "msix:build failed" }
 }
 finally {
@@ -339,14 +339,14 @@ try {
     --publisher $ExpectedPublisher `
     --version $MsixVersion `
     --output-path $outDir `
-    --output-name "PulseDiagnostics-$Version-Store"
+    --output-name "DiagnoseThat-$Version-Store"
   if ($LASTEXITCODE -ne 0) { throw "msix:pack failed" }
 }
 finally {
   Pop-Location
 }
 
-$msix = Join-Path $outDir "PulseDiagnostics-$Version-Store.msix"
+$msix = Join-Path $outDir "DiagnoseThat-$Version-Store.msix"
 if (-not (Test-Path $msix)) {
   $found = Get-ChildItem $outDir -Filter "*.msix" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
   if (-not $found) { throw "MSIX not found in $outDir" }
@@ -438,11 +438,11 @@ if ($pdbCandidates.Count -gt 0) {
   $appxsymZip = Join-Path $outDir "_sym.zip"
   if (Test-Path $appxsymZip) { Remove-Item $appxsymZip -Force }
   Compress-Archive -Path (Join-Path $symDir "*") -DestinationPath $appxsymZip -Force
-  $appxsym = Join-Path $uploadStage "PulseDiagnostics-$Version-Store.appxsym"
+  $appxsym = Join-Path $uploadStage "DiagnoseThat-$Version-Store.appxsym"
   Move-Item $appxsymZip $appxsym -Force
 }
 
-$msixupload = Join-Path $outDir "PulseDiagnostics-$Version-Store.msixupload"
+$msixupload = Join-Path $outDir "DiagnoseThat-$Version-Store.msixupload"
 if (Test-Path $msixupload) { Remove-Item $msixupload -Force }
 $zipTmp = Join-Path $outDir "_upload.zip"
 if (Test-Path $zipTmp) { Remove-Item $zipTmp -Force }

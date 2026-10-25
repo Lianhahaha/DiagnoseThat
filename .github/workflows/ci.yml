@@ -52,7 +52,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: pulse-store-msix
+          name: diagnosethat-store-msix
           path: |
             dist/msix/*.msix
             dist/msix/*.msixupload

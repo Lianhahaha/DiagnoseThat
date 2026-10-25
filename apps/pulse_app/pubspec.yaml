@@ -1,5 +1,5 @@
 name: pulse
-description: Pulse — Windows diagnostics
+description: DiagnoseThat — Windows diagnostics
 publish_to: "none"
 version: 1.5.0+24
 
@@ -55,13 +55,12 @@ flutter:
         - asset: assets/fonts/GeistMono-Medium.ttf
           weight: 500
 
-# Microsoft Store identity (Partner Center — must match exactly).
-# Store ID: 9PNDTLNTJ82T
-# Package Family Name: Regncreative.PulseDiagnostics_epm7gp6hnh3h0
+# Store identity (must match Partner Center exactly if published).
+# Package Family Name: Lianhahaha.DiagnoseThat_epm7gp6hnh3h0
 msix_config:
-  display_name: Pulse Diagnostics
-  publisher_display_name: Regncreative
-  identity_name: Regncreative.PulseDiagnostics
+  display_name: DiagnoseThat
+  publisher_display_name: Lianhahaha
+  identity_name: Lianhahaha.DiagnoseThat
   publisher: CN=72B69D57-C9E8-4280-AF56-B142286B0D20
   msix_version: 1.5.0.0
   logo_path: assets/branding/app_icon_512.png
@@ -74,7 +73,7 @@ msix_config:
   sign_msix: false
   install_certificate: false
   output_path: ../../dist/msix
-  output_name: PulseDiagnostics-1.5.0-Store
+  output_name: DiagnoseThat-1.5.0-Store
   # Desktop bridge client + LocalService packaged PulseService (desktop6:Service).
   # Partner Center must approve the packagedServices restricted capability.
   capabilities: runFullTrust, internetClient, packagedServices

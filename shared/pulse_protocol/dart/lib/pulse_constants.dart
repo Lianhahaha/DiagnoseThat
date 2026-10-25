@@ -1,6 +1,6 @@
 /// Shared Dart constants matching pulse/constants.hpp
 
-const String kProductName = 'Pulse';
+const String kProductName = 'DiagnoseThat';
 const String kServiceName = 'PulseService';
 const String kPipeName = r'\\.\pipe\PulseService';
 const String kAppVersion = '1.5.0';

@@ -1337,7 +1337,7 @@ class _DeveloperToolsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Inject Test Event pushes a Pulse.Diagnostics synthetic event over IPC. '
+            'Inject Test Event pushes a DiagnoseThat.Diagnostics synthetic event over IPC. '
             'It does not write to the Windows Event Log.',
             style: Theme.of(context).textTheme.bodySmall,
           ),

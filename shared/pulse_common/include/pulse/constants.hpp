@@ -5,9 +5,9 @@
 
 namespace pulse {
 
-constexpr const char* kProductName = "Pulse";
+constexpr const char* kProductName = "DiagnoseThat";
 constexpr const char* kServiceName = "PulseService";
-constexpr const char* kServiceDisplayName = "Pulse";
+constexpr const char* kServiceDisplayName = "DiagnoseThat";
 constexpr const char* kPipeName = "\\\\.\\pipe\\PulseService";
 constexpr const char* kServiceVersion = "1.5.0";
 constexpr const char* kAppVersion = "1.5.0";
