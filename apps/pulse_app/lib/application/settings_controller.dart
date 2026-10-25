@@ -62,7 +62,7 @@ class SettingsController extends ChangeNotifier {
   static const int defaultCustomAccentArgb = 0xFF60CDFF;
   static const String defaultSettingsExportFileName = 'settings-export.json';
   static const String releasesUrl =
-      'https://github.com/Regncreative/Pulse/releases';
+      'https://github.com/Lianhahaha/DiagnoseThat/releases';
 
   /// Default System Health dashboard section order.
   static const List<String> defaultDashboardWidgetOrder = [
