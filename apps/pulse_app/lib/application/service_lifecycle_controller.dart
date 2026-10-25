@@ -79,23 +79,23 @@ class ServiceLifecycleController extends ChangeNotifier {
   String get recoveryMessage => switch (state) {
         PulseServiceScmState.notInstalled => isPackagedMsix
             ? 'The Microsoft Store package registers PulseService automatically. '
-                'If it is missing, repair or reinstall Pulse Diagnostics from the Store. '
+                'If it is missing, repair or reinstall DiagnoseThat from the Store. '
                 'Classic Repair / Install is not used for Store builds.'
-            : 'Pulse needs its Windows service to observe Event Log activity on this PC. '
+            : 'DiagnoseThat needs its Windows service to observe Event Log activity on this PC. '
                 'The service is not registered yet — repair the install to continue.',
         PulseServiceScmState.stopped =>
-          'Pulse is ready, but PulseService is not running. Timeline, System Health, '
+          'DiagnoseThat is ready, but PulseService is not running. Timeline, System Health, '
               'and Diagnostics need the service to connect over a local named pipe.',
         PulseServiceScmState.startPending =>
-          'Windows is starting PulseService. Pulse will connect automatically when it is ready.',
+          'Windows is starting PulseService. DiagnoseThat will connect automatically when it is ready.',
         PulseServiceScmState.stopPending =>
           'Windows is stopping PulseService. Timeline and Health will go offline until it runs again.',
         PulseServiceScmState.running =>
           'PulseService is running. If the app still shows Offline, wait a moment for the local connection.',
         PulseServiceScmState.unknown => isPackagedMsix
-            ? 'Pulse could not determine the packaged service state. Try Start, '
+            ? 'DiagnoseThat could not determine the packaged service state. Try Start, '
                 'or repair the app from the Microsoft Store.'
-            : 'Pulse could not determine the Windows service state. You can try starting '
+            : 'DiagnoseThat could not determine the Windows service state. You can try starting '
                 'PulseService, or open Diagnostics for more detail.',
       };
 
@@ -141,7 +141,7 @@ class ServiceLifecycleController extends ChangeNotifier {
             if (state == PulseServiceScmState.notInstalled) {
               throw const PulseServiceLaunchException(
                 'PulseService is not registered by this Store package. '
-                'Repair or reinstall Pulse Diagnostics from the Microsoft Store.',
+                'Repair or reinstall DiagnoseThat from the Microsoft Store.',
               );
             }
             return _elevated('--start');
@@ -194,7 +194,7 @@ class ServiceLifecycleController extends ChangeNotifier {
       if (isPackagedMsix) {
         throw const PulseServiceLaunchException(
           'PulseService is not registered by this Store package. '
-          'Repair or reinstall Pulse Diagnostics from the Microsoft Store.',
+          'Repair or reinstall DiagnoseThat from the Microsoft Store.',
         );
       }
       await repairInstall();
@@ -258,12 +258,12 @@ class ServiceLifecycleController extends ChangeNotifier {
   String _messageForExitCode(int code, String label) {
     if (code == 2) {
       if (isPackagedMsix) {
-        return 'PulseService is not registered. Repair Pulse Diagnostics from the Microsoft Store.';
+        return 'PulseService is not registered. Repair DiagnoseThat from the Microsoft Store.';
       }
       return 'PulseService is not installed. Use Repair / Install service.';
     }
     return 'Could not $label PulseService (exit code $code). '
-        'Approve UAC if prompted, or reinstall Pulse.';
+        'Approve UAC if prompted, or reinstall DiagnoseThat.';
   }
 
   @override

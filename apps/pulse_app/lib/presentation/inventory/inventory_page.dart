@@ -761,7 +761,7 @@ class _InventoryPageState extends State<InventoryPage>
 
   Future<void> _exportVisible(List<_InventoryRow> rows) async {
     final buffer = StringBuffer();
-    buffer.writeln('# Pulse Inventory export');
+    buffer.writeln('# DiagnoseThat Inventory export');
     buffer.writeln('domain=${_domain.name}');
     final snap = _domainCache[_domain];
     if (snap != null) {

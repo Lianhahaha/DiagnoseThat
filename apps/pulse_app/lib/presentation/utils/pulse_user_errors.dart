@@ -12,7 +12,7 @@ abstract final class PulseUserErrors {
   static String fromMessage(String raw) {
     final lower = raw.toLowerCase();
     if (lower.contains('timeout')) {
-      return 'The service took too long to respond. Pulse will keep trying.';
+      return 'The service took too long to respond. DiagnoseThat will keep trying.';
     }
     if (lower.contains('createfile') ||
         lower.contains('named pipe') ||
@@ -27,7 +27,7 @@ abstract final class PulseUserErrors {
       return 'PulseService is offline. Start it to resume observation.';
     }
     if (lower.contains('protocol') || lower.contains('version')) {
-      return 'Pulse and PulseService protocol versions do not match.';
+      return 'DiagnoseThat and PulseService protocol versions do not match.';
     }
     if (lower.contains('unsupported') ||
         lower.contains('only the system') ||
@@ -45,15 +45,16 @@ abstract final class PulseUserErrors {
     }
     if (lower.contains('windows blocked the administrator request')) {
       return 'Windows blocked the administrator request (error 5). A security '
-          'policy or security software may be preventing Pulse from controlling '
+          'policy or security software may be preventing DiagnoseThat from controlling '
           'PulseService. You can use Services (services.msc) instead.';
     }
     if (lower.contains('not installed') ||
         lower.contains('not registered by this store') ||
-        lower.contains('repair or reinstall pulse diagnostics from the microsoft store')) {
+        lower.contains('repair or reinstall pulse diagnostics from the microsoft store') ||
+        lower.contains('repair or reinstall diagnosethat from the microsoft store')) {
       if (lower.contains('store')) {
         return 'PulseService is registered by the Store package. '
-            'Repair or reinstall Pulse Diagnostics from the Microsoft Store.';
+            'Repair or reinstall DiagnoseThat from the Microsoft Store.';
       }
       return 'PulseService is not installed. Use Repair / Install service.';
     }
@@ -63,10 +64,10 @@ abstract final class PulseUserErrors {
         lower.contains('could not locate pulseservice in this store')) {
       if (lower.contains('store')) {
         return 'PulseService is missing from this Store package. '
-            'Repair or reinstall Pulse Diagnostics from the Microsoft Store.';
+            'Repair or reinstall DiagnoseThat from the Microsoft Store.';
       }
       return 'PulseService.exe is missing from the install folder. '
-          'Reinstall Pulse, then try Repair / Install service.';
+          'Reinstall DiagnoseThat, then try Repair / Install service.';
     }
     // Strip StateError / Exception wrappers when present.
     final cleaned = raw

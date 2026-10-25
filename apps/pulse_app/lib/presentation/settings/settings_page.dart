@@ -324,7 +324,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     title: 'Reset onboarding?',
                     body:
-                        'The welcome screen will appear again the next time Pulse starts.',
+                        'The welcome screen will appear again the next time DiagnoseThat starts.',
                     onConfirm: settings.resetOnboarding,
                   ),
                 ),
@@ -578,7 +578,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Text(
-                  'Background Mode keeps Pulse running in the system tray so it can monitor your system and notify you about critical conditions even when the main window is closed.',
+                  'Background Mode keeps DiagnoseThat running in the system tray so it can monitor your system and notify you about critical conditions even when the main window is closed.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: PulseTokens.textSecondary,
                         height: 1.4,
@@ -590,7 +590,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: LucideIcons.panelBottom,
                 title: 'Background Mode',
                 subtitle:
-                    'Keep Pulse running in the system tray when the window is closed.',
+                    'Keep DiagnoseThat running in the system tray when the window is closed.',
                 trailing: Switch(
                   value: settings.backgroundMode,
                   onChanged: (v) async {
@@ -607,9 +607,9 @@ class _SettingsPageState extends State<SettingsPage> {
               const SoftDivider(indent: 52),
               _SettingsRow(
                 icon: LucideIcons.power,
-                title: 'Start Pulse with Windows',
+                title: 'Start DiagnoseThat with Windows',
                 subtitle:
-                    'Launch Pulse in the background when Windows starts (user session only).',
+                    'Launch DiagnoseThat in the background when Windows starts (user session only).',
                 trailing: Switch(
                   value: settings.startWithWindows,
                   onChanged: (v) async {
@@ -628,7 +628,7 @@ class _SettingsPageState extends State<SettingsPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 child: Text(
-                  'PulseService continues to run independently. Exiting Pulse only closes the desktop application.',
+                  'PulseService continues to run independently. Exiting DiagnoseThat only closes the desktop application.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: PulseTokens.textTertiary,
                         height: 1.4,
@@ -644,7 +644,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: LucideIcons.bell,
                 title: 'System Notifications',
                 subtitle:
-                    'Allow Pulse to notify you when critical system conditions are detected.',
+                    'Allow DiagnoseThat to notify you when critical system conditions are detected.',
                 trailing: Switch(
                   value: settings.systemNotifications,
                   onChanged: (v) async {
@@ -898,7 +898,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsRow(
                 icon: LucideIcons.fileText,
                 title: 'Export logs',
-                subtitle: 'Write recent app log lines to Downloads/Pulse',
+                subtitle: 'Write recent app log lines to Downloads/DiagnoseThat',
                 trailing: PulseButton(
                   label: 'Export',
                   icon: LucideIcons.download,
@@ -994,7 +994,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsRow(
                 icon: LucideIcons.eyeOff,
                 title: 'No telemetry',
-                subtitle: 'Pulse does not send analytics or crash reports',
+                subtitle: 'DiagnoseThat does not send analytics or crash reports',
                 trailing: Icon(
                   LucideIcons.check,
                   size: 18,
@@ -1070,7 +1070,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               _SettingsRow(
                 icon: LucideIcons.info,
-                title: 'Pulse version',
+                title: 'DiagnoseThat version',
                 subtitle: kAppVersion,
                 trailing: const PulseBadge(
                   label: 'Bootstrap',
@@ -1133,7 +1133,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: LucideIcons.upload,
                 title: 'Export settings',
                 subtitle:
-                    'Write JSON to Downloads/Pulse/settings-export.json',
+                    'Write JSON to Downloads/DiagnoseThat/settings-export.json',
                 trailing: PulseButton(
                   label: 'Export',
                   icon: LucideIcons.download,
@@ -1156,7 +1156,7 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsRow(
                 icon: LucideIcons.import,
                 title: 'Restore from last export',
-                subtitle: 'Import Downloads/Pulse/settings-export.json',
+                subtitle: 'Import Downloads/DiagnoseThat/settings-export.json',
                 trailing: PulseButton(
                   label: 'Import',
                   icon: LucideIcons.upload,
@@ -1178,7 +1178,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: LucideIcons.folder,
                 title: 'Export directory',
                 subtitle: settings.exportDirectory.isEmpty
-                    ? 'Default: Downloads/Pulse'
+                    ? 'Default: Downloads/DiagnoseThat'
                     : settings.exportDirectory,
                 trailing: PulseButton(
                   label: settings.exportDirectory.isEmpty ? 'Set' : 'Clear',
@@ -1415,13 +1415,13 @@ class _UpdatesGroup extends StatelessWidget {
         : ' Last checked ${checked.toLocal().toString().substring(0, 16)}.';
     return switch (updates.status) {
       UpdateCheckStatus.idle =>
-        'Ask GitHub whether a newer Pulse is out. Nothing is downloaded or '
+        'Ask GitHub whether a newer DiagnoseThat is out. Nothing is downloaded or '
             'installed, and nothing about this PC is sent.$when',
       UpdateCheckStatus.checking => 'Checking GitHub…',
       UpdateCheckStatus.upToDate =>
         'You have the latest version ($kAppVersion).$when',
       UpdateCheckStatus.available =>
-        'Pulse ${updates.latest!.version} is available (you have '
+        'DiagnoseThat ${updates.latest!.version} is available (you have '
             '$kAppVersion).',
       UpdateCheckStatus.failed => updates.error ?? 'The check failed.',
     };
@@ -1469,7 +1469,7 @@ class _UpdatesGroup extends StatelessWidget {
         _SettingsRow(
           icon: LucideIcons.calendarClock,
           title: 'Check automatically',
-          subtitle: 'Once a week, when Pulse starts. Off by default.',
+          subtitle: 'Once a week, when DiagnoseThat starts. Off by default.',
           trailing: Switch(
             value: settings.checkUpdatesAutomatically,
             onChanged: (value) async {
@@ -1592,7 +1592,7 @@ class _AssistantConnectionGroupState extends State<_AssistantConnectionGroup> {
     if (!store.write(token)) {
       PulseSnack.error(
         context,
-        'Windows could not save the key. Details are in the Pulse log.',
+        'Windows could not save the key. Details are in the DiagnoseThat log.',
       );
       return;
     }
@@ -1607,7 +1607,7 @@ class _AssistantConnectionGroupState extends State<_AssistantConnectionGroup> {
     if (!store.delete()) {
       PulseSnack.error(
         context,
-        'Windows could not remove the key. Details are in the Pulse log.',
+        'Windows could not remove the key. Details are in the DiagnoseThat log.',
       );
       return;
     }

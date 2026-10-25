@@ -75,7 +75,7 @@ class LegacyMcpCleanup {
         try {
           if (await _removeServer(File(path), serverKey)) {
             edited.add(path);
-            logger.info(_component, 'Removed Pulse MCP entry for $client: $path');
+            logger.info(_component, 'Removed DiagnoseThat MCP entry for $client: $path');
           }
         } catch (e) {
           logger.warn(_component, 'Could not edit $path ($client): $e');

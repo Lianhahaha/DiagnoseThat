@@ -869,7 +869,7 @@ class SettingsController extends ChangeNotifier {
     final custom = exportDirectory.trim();
     final dir = custom.isNotEmpty
         ? custom
-        : [(await ExportWriter().defaultRoot())?.path ?? '', 'Pulse']
+        : [(await ExportWriter().defaultRoot())?.path ?? '', 'DiagnoseThat']
             .join(Platform.pathSeparator);
     return '$dir${Platform.pathSeparator}$defaultSettingsExportFileName';
   }
@@ -880,7 +880,7 @@ class SettingsController extends ChangeNotifier {
     final saved = await ExportWriter().write(
       fileName: defaultSettingsExportFileName,
       bytes: utf8.encode(encoder.convert(toMap())),
-      defaultSubfolder: const ['Pulse'],
+      defaultSubfolder: const ['DiagnoseThat'],
       customDirectory: exportDirectory,
     );
     logger.info('settings', 'Settings exported');
@@ -905,7 +905,7 @@ class SettingsController extends ChangeNotifier {
     final candidates = [
       defaultPath,
       if (exportDirectory.trim().isEmpty)
-        [documents.path, 'Pulse', defaultSettingsExportFileName]
+        [documents.path, 'DiagnoseThat', defaultSettingsExportFileName]
             .join(Platform.pathSeparator),
     ];
     for (final path in candidates) {

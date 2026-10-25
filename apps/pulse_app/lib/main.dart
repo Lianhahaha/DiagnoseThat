@@ -25,10 +25,10 @@ Future<void> main(List<String> args) async {
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
-    title: 'Pulse',
+    title: 'DiagnoseThat',
     windowButtonVisibility: false,
   );
-  await windowManager.setTitle('Pulse');
+  await windowManager.setTitle('DiagnoseThat');
   await windowManager.waitUntilReadyToShow(windowOptions);
 
   final services = await AppServices.create();

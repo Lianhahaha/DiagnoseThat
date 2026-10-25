@@ -26,14 +26,14 @@ String timelineEmptyMessage({
   if (securitySource && !sessionHasSecurityChannelEvents) {
     return 'Security log is unavailable because PulseService runs as LocalService.\n\n'
         'Windows often denies LocalService read access to the Security Event Log. '
-        'Pulse skips the channel and does not fake Security events. '
+        'DiagnoseThat skips the channel and does not fake Security events. '
         'Other diagnostics channels continue normally.';
   }
 
   if (!hasSessionEvents) {
     return mock
         ? 'No sample events are loaded. Rebuild with PULSE_MOCK_TIMELINE or connect PulseService.'
-        : 'Pulse is connected and listening across diagnostics Event Log channels.\n\n'
+        : 'DiagnoseThat is connected and listening across diagnostics Event Log channels.\n\n'
             'New events appear here as Windows works. Use Refresh if you expect a historical snapshot.';
   }
   if (filtersActive) {

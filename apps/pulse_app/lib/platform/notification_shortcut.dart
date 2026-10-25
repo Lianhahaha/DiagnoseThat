@@ -9,7 +9,7 @@ import '../logging/app_logger.dart';
 /// App name passed to `localNotifier.setup`. WinToast uses it as the
 /// AppUserModelID and as the name of the Start menu shortcut it creates
 /// (`%APPDATA%\Microsoft\Windows\Start Menu\Programs\<name>.lnk`).
-const String kNotificationAppName = 'Pulse Diagnostics';
+const String kNotificationAppName = 'DiagnoseThat';
 
 /// APPMODEL_ERROR_NO_APPLICATION: the process is not a packaged app.
 const int _kAppModelErrorNoApplication = 15703;

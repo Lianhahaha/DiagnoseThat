@@ -188,7 +188,7 @@ class _TimelineDetailsPanelState extends State<TimelineDetailsPanel> {
       MetadataEntry('Category', dash(event.category)),
       MetadataEntry('Importance', dash(event.importanceLabel)),
       MetadataEntry(
-        'Pulse event id',
+        'DiagnoseThat event id',
         dense
             ? (event.eventId.isEmpty ? '—' : event.eventId)
             : dash(event.eventId),

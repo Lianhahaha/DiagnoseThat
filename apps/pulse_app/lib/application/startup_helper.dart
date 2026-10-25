@@ -15,17 +15,17 @@ Future<void> configureLaunchAtStartup({
   if (!Platform.isWindows) return;
   try {
     launchAtStartup.setup(
-      appName: 'Pulse Diagnostics',
+      appName: 'DiagnoseThat',
       appPath: Platform.resolvedExecutable,
       args: const ['--background'],
     );
     final isEnabled = await launchAtStartup.isEnabled();
     if (enabled && !isEnabled) {
       await launchAtStartup.enable();
-      logger.info('Startup', 'Enabled Start Pulse with Windows');
+      logger.info('Startup', 'Enabled Start DiagnoseThat with Windows');
     } else if (!enabled && isEnabled) {
       await launchAtStartup.disable();
-      logger.info('Startup', 'Disabled Start Pulse with Windows');
+      logger.info('Startup', 'Disabled Start DiagnoseThat with Windows');
     }
   } catch (e) {
     logger.warn('Startup', 'configureLaunchAtStartup failed: $e');

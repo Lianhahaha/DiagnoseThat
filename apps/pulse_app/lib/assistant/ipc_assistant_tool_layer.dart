@@ -21,7 +21,7 @@ String assistantToolActivityLabel(String toolName) {
       'Checking running processes...',
     'timeline_list' || 'timeline_search' => 'Checking recent events...',
     'windows_services' => 'Checking Windows services...',
-    'diagnostics_snapshot' => 'Checking Pulse diagnostics...',
+    'diagnostics_snapshot' => 'Checking DiagnoseThat diagnostics...',
     'service_status' => 'Checking PulseService status...',
     _ => 'Checking diagnostics...',
   };
@@ -53,7 +53,7 @@ class IpcAssistantToolLayer implements AssistantToolLayer {
         ok: false,
         errorCode: 'TOOL_NOT_ALLOWED',
         errorMessage:
-            'Tool "$toolName" is not available to Pulse Assistant. '
+            'Tool "$toolName" is not available to DiagnoseThat Assistant. '
             'Only read-only diagnostic tools are permitted.',
       );
     }
@@ -76,7 +76,7 @@ class IpcAssistantToolLayer implements AssistantToolLayer {
         ok: false,
         errorCode: ipcDown ? 'PULSE_SERVICE_UNAVAILABLE' : 'TOOL_FAILED',
         errorMessage: ipcDown
-            ? 'PulseService is unavailable. Open Pulse and ensure the service is running.'
+            ? 'PulseService is unavailable. Open DiagnoseThat and ensure the service is running.'
             : 'Could not read diagnostics for this request.',
       );
     }

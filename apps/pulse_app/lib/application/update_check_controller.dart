@@ -55,7 +55,7 @@ class UpdateCheckController extends ChangeNotifier {
       if (isNewerVersion(release.version, currentVersion)) {
         _latest = release;
         _status = UpdateCheckStatus.available;
-        logger.info('Updates', 'Pulse ${release.version} is available');
+        logger.info('Updates', 'DiagnoseThat ${release.version} is available');
       } else {
         _latest = null;
         _status = UpdateCheckStatus.upToDate;

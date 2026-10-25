@@ -46,7 +46,7 @@ class ServiceLifecycleControls extends StatelessWidget {
         context,
         title: 'Restart PulseService?',
         body:
-            'Pulse will disconnect briefly while Windows restarts the service.',
+            'DiagnoseThat will disconnect briefly while Windows restarts the service.',
         confirmLabel: 'Restart service',
       );
       if (!ok || !context.mounted) return;

@@ -59,7 +59,7 @@ class AppServices {
 
   static Future<AppServices> create() async {
     final logger = AppLogger(file: AppLogFile.openDefault());
-    logger.info('App', 'Pulse $kAppVersion starting');
+    logger.info('App', 'DiagnoseThat $kAppVersion starting');
     final settings = SettingsController(logger: logger);
     await settings.load();
     final timelineLibrary = TimelineLibraryController(logger: logger);

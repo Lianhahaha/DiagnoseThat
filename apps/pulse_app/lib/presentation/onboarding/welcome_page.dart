@@ -44,7 +44,7 @@ class _WelcomePageState extends State<WelcomePage> {
       icon: LucideIcons.server,
       title: 'PulseService',
       body:
-          'Pulse observes through a local Windows service. If Timeline looks Offline after launch, start PulseService from the app — no Services.msc needed.',
+          'DiagnoseThat observes through a local Windows service. If Timeline looks Offline after launch, start PulseService from the app — no Services.msc needed.',
     ),
   ];
 
@@ -70,7 +70,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   const PulseBrandMark(size: 88),
                   const SizedBox(height: PulseTokens.spaceLg),
                   Text(
-                    'Welcome to Pulse',
+                    'Welcome to DiagnoseThat',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontSize: 24,

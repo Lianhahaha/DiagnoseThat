@@ -9,7 +9,7 @@ abstract final class AssistantToolAllowlist {
     AssistantToolDescriptor(
       name: 'pulse_status',
       description:
-          'Pulse Assistant status: versions and connection health. Observation only.',
+          'DiagnoseThat Assistant status: versions and connection health. Observation only.',
     ),
     AssistantToolDescriptor(
       name: 'system_health',

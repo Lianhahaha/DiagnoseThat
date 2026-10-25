@@ -25,7 +25,7 @@ class PulseApp extends StatelessWidget {
     final dark = PulseTheme.dark(accent: accent);
 
     return MaterialApp(
-      title: 'Pulse',
+      title: 'DiagnoseThat',
       debugShowCheckedModeBanner: false,
       theme: light,
       darkTheme: dark,

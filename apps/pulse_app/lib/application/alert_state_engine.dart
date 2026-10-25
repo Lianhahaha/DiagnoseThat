@@ -121,7 +121,7 @@ class AlertStateEngine {
         notificationsPaused: notificationsPaused,
         title: 'Critical system condition',
         body:
-            'Pulse detected a critical system condition. Open Pulse for details.',
+            'DiagnoseThat detected a critical system condition. Open DiagnoseThat for details.',
       ),
     );
     return out;
@@ -144,7 +144,7 @@ class AlertStateEngine {
       notificationsPaused: notificationsPaused,
       title: 'Critical system condition',
       body:
-          'Pulse detected a critical Event Log condition. Open Pulse for details.',
+          'DiagnoseThat detected a critical Event Log condition. Open DiagnoseThat for details.',
     );
     if (ev.shouldNotify) {
       final slot = _slots[AlertKind.eventLog]!;

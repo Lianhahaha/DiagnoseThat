@@ -116,7 +116,7 @@ class TimelineActivitySummary {
   /// Supporting sentence with the counts behind [headline].
   String get detail {
     if (lastHourCount == 0) {
-      return 'Pulse is listening. New events appear here as Windows logs them.';
+      return 'DiagnoseThat is listening. New events appear here as Windows logs them.';
     }
     final parts = <String>[
       _plural(lastHourCount, 'event', 'events'),

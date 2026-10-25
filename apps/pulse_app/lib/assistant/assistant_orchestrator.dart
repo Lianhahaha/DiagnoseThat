@@ -172,6 +172,6 @@ class AssistantOrchestrator {
 
   static String jsonToolDenied(String toolName) {
     return '{"ok":false,"errorCode":"TOOL_NOT_ALLOWED",'
-        '"errorMessage":"Tool \\"$toolName\\" is not available to Pulse Assistant."}';
+        '"errorMessage":"Tool \\"$toolName\\" is not available to DiagnoseThat Assistant."}';
   }
 }

@@ -186,9 +186,9 @@ class _EmptyLocalAiState extends StatelessWidget {
   const _EmptyLocalAiState();
 
   static const _learnMessage =
-      'Pulse Assistant talks to a local AI runtime that you install and manage yourself '
+      'DiagnoseThat Assistant talks to a local AI runtime that you install and manage yourself '
       '(for example Ollama or LM Studio).\n\n'
-      'Pulse never downloads AI models, never runs third-party installers, and never '
+      'DiagnoseThat never downloads AI models, never runs third-party installers, and never '
       'modifies your system to set up AI software.\n\n'
       'After a supported runtime is available on this PC, return here to connect it.';
 
@@ -248,7 +248,7 @@ class _EmptyLocalAiState extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Pulse Assistant uses a local AI model to analyze your system without sending your diagnostic data to a cloud service.',
+                    'DiagnoseThat Assistant uses a local AI model to analyze your system without sending your diagnostic data to a cloud service.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: PulseTokens.textSecondary,
@@ -279,7 +279,7 @@ class _EmptyLocalAiState extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Install a supported local AI runtime such as Ollama or LM Studio, then return to Pulse to connect your model.',
+                          'Install a supported local AI runtime such as Ollama or LM Studio, then return to DiagnoseThat to connect your model.',
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: PulseTokens.textSecondary,
@@ -307,7 +307,7 @@ class _EmptyLocalAiState extends StatelessWidget {
                         if (statusLines.isNotEmpty) ...[
                           const SizedBox(height: 14),
                           Text(
-                            'What Pulse checked',
+                            'What DiagnoseThat checked',
                             style: Theme.of(context)
                                 .textTheme
                                 .labelMedium
@@ -430,9 +430,9 @@ class _NoModelsState extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Your local AI runtime is reachable, but Pulse did not find any models. '
+                    'Your local AI runtime is reachable, but DiagnoseThat did not find any models. '
                     'Download or install a model in Ollama or LM Studio yourself, then return here. '
-                    'Pulse never downloads or installs AI models.',
+                    'DiagnoseThat never downloads or installs AI models.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: PulseTokens.textSecondary,
@@ -493,7 +493,7 @@ class _ModelPickerState extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'Select a local runtime and model to start chatting. '
-                'Pulse Assistant uses read-only diagnostics only.',
+                'DiagnoseThat Assistant uses read-only diagnostics only.',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: PulseTokens.textSecondary,
                       height: 1.45,
@@ -915,7 +915,7 @@ class _EmptyChatHints extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'Pulse Assistant can inspect read-only diagnostics through your local model.',
+          'DiagnoseThat Assistant can inspect read-only diagnostics through your local model.',
           textAlign: TextAlign.center,
           style: textTheme.bodyMedium?.copyWith(
             color: PulseTokens.textSecondary,

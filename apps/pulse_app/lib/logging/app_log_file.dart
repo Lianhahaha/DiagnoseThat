@@ -27,7 +27,7 @@ class AppLogFile {
     if (localAppData == null || localAppData.isEmpty) return null;
     final sep = Platform.pathSeparator;
     final dir = Directory(
-      [localAppData, 'Pulse', 'logs', 'app'].join(sep),
+      [localAppData, 'DiagnoseThat', 'logs', 'app'].join(sep),
     );
     return AppLogFile(dir)..pruneOldFiles();
   }
@@ -62,7 +62,7 @@ class AppLogFile {
     } catch (e) {
       // Disk full / access denied: keep the in-memory log only.
       _disabled = true;
-      stderr.writeln('Pulse app log file disabled: $e');
+      stderr.writeln('DiagnoseThat app log file disabled: $e');
     }
   }
 

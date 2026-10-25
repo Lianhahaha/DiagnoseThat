@@ -66,7 +66,7 @@ class PulseNavRail extends StatelessWidget {
       child: Column(
         children: [
           Semantics(
-            label: 'Pulse',
+            label: 'DiagnoseThat',
             image: true,
             child: Container(
               width: _markTileSize,

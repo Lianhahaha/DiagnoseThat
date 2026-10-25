@@ -35,8 +35,8 @@ class EvtxFileReader {
     final exe = launcher.resolvePackageServiceExePath();
     if (exe == null) {
       throw const EvtxImportException(
-        'PulseService.exe is missing from the Pulse install folder, so the '
-        'file cannot be read. Repair Pulse with the installer.',
+        'PulseService.exe is missing from the DiagnoseThat install folder, so the '
+        'file cannot be read. Repair DiagnoseThat with the installer.',
       );
     }
 
@@ -63,7 +63,7 @@ class EvtxFileReader {
         throw EvtxImportException(
           result.exitCode == _kReadEvtxReadFailed
               ? 'Windows could not read this file as an event log.$detail'
-              : 'Pulse could not read the file '
+              : 'DiagnoseThat could not read the file '
                   '(exit code ${result.exitCode}).$detail',
         );
       }

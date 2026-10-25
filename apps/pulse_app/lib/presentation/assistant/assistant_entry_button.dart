@@ -21,7 +21,7 @@ class _AssistantEntryButtonState extends State<AssistantEntryButton>
   Widget build(BuildContext context) {
     Theme.of(context);
     final open = context.select<AssistantController, bool>((c) => c.panelOpen);
-    final tooltip = open ? 'Close Assistant' : 'Open Pulse Assistant';
+    final tooltip = open ? 'Close Assistant' : 'Open DiagnoseThat Assistant';
 
     final bg = open
         ? PulseTokens.surfaceElevated

@@ -78,7 +78,7 @@ class _PulseTitleBarState extends State<PulseTitleBar> with WindowListener {
         child: Row(
           children: [
             Text(
-              'Pulse',
+              'DiagnoseThat',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: _focused
                         ? PulseTokens.textSecondary

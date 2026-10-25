@@ -1110,7 +1110,7 @@ class _PerformanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _DiagSection(
-      title: 'Pulse Performance',
+      title: 'DiagnoseThat Performance',
       icon: LucideIcons.gauge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

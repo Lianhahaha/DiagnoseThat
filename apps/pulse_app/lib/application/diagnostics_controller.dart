@@ -157,7 +157,7 @@ class DiagnosticsController extends ChangeNotifier {
     final st = ipc.status;
     final fm = frameMetrics;
     final buf = StringBuffer()
-      ..writeln('Pulse Diagnostics')
+      ..writeln('DiagnoseThat')
       ..writeln('App: $kAppVersion')
       ..writeln('Protocol: ${s?.protocolVersion ?? kProtocolVersion}')
       ..writeln('IPC state: ${st.state.name}')
@@ -414,7 +414,7 @@ class DiagnosticsController extends ChangeNotifier {
         final saved = await ExportWriter().write(
           fileName: zipName,
           bytes: zipBytes,
-          defaultSubfolder: const ['Pulse', 'exports'],
+          defaultSubfolder: const ['DiagnoseThat', 'exports'],
         );
         logger.info('Diagnostics', 'Exported diagnostics');
         notifyListeners();
@@ -430,7 +430,7 @@ class DiagnosticsController extends ChangeNotifier {
         return ExportWriter().write(
           fileName: 'pulse-logs-$stamp.txt',
           bytes: utf8.encode(_masked(logger.lines.join('\n'))),
-          defaultSubfolder: const ['Pulse', 'exports'],
+          defaultSubfolder: const ['DiagnoseThat', 'exports'],
         );
       });
 

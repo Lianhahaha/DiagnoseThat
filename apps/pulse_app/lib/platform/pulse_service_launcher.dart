@@ -142,8 +142,8 @@ class WindowsPulseServiceLauncher implements PulseServiceLauncher {
     if (exe == null) {
       if (needsPackage) {
         throw const PulseServiceLaunchException(
-          'PulseService.exe is missing from the Pulse install folder. '
-          'Reinstall Pulse, then use Repair / Install service.',
+          'PulseService.exe is missing from the DiagnoseThat install folder. '
+          'Reinstall DiagnoseThat, then use Repair / Install service.',
         );
       }
       throw const PulseServiceLaunchException(
@@ -256,7 +256,7 @@ int _runElevatedBlocking(
         final err = GetLastError();
         if (err == ERROR_CANCELLED) {
           throw const PulseServiceLaunchException(
-            'Administrator approval was cancelled. Pulse did not change the service.',
+            'Administrator approval was cancelled. DiagnoseThat did not change the service.',
           );
         }
         if (err == ERROR_ACCESS_DENIED) {

@@ -23,10 +23,10 @@ class ExportWriteException implements Exception {
 
 /// Writes exports (reports, Timeline, diagnostics, settings).
 ///
-/// The default location is **Downloads**/Pulse, not Documents. Windows
-/// Security's Controlled folder access blocks apps it does not trust (Pulse
+/// The default location is **Downloads**/DiagnoseThat, not Documents. Windows
+/// Security's Controlled folder access blocks apps it does not trust (DiagnoseThat
 /// is not code-signed yet) from writing to Documents and Desktop, and every
-/// attempt shows the user a "blocked" alert. Pulse must not work around that
+/// attempt shows the user a "blocked" alert. DiagnoseThat must not work around that
 /// protection, so it never tries. Revisit once releases are signed.
 ///
 /// A folder the user chose in Settings is always used as-is; when Windows
@@ -56,8 +56,8 @@ class ExportWriter {
         );
       } on FileSystemException catch (e) {
         throw ExportWriteException(
-          'Windows did not let Pulse write to $custom (${_reason(e)}). '
-          'If Controlled folder access is on, allow Pulse in Windows '
+          'Windows did not let DiagnoseThat write to $custom (${_reason(e)}). '
+          'If Controlled folder access is on, allow DiagnoseThat in Windows '
           'Security → Ransomware protection, or choose another export '
           'folder in Settings.',
         );
@@ -77,7 +77,7 @@ class ExportWriter {
       );
     } on FileSystemException catch (e) {
       throw ExportWriteException(
-        'Windows did not let Pulse save the export to Downloads '
+        'Windows did not let DiagnoseThat save the export to Downloads '
         '(${_reason(e)}). Choose an export folder in Settings.',
       );
     }

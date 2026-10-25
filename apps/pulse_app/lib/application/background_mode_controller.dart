@@ -81,7 +81,7 @@ class BackgroundModeController extends ChangeNotifier
     // opening (windows/runner/single_instance.h).
     _singleInstanceChannel.setMethodCallHandler((call) async {
       if (call.method != 'activate') return;
-      logger.info('BackgroundMode', 'Pulse started again; showing the window');
+      logger.info('BackgroundMode', 'DiagnoseThat started again; showing the window');
       await showMainWindow();
     });
 
@@ -207,7 +207,7 @@ class BackgroundModeController extends ChangeNotifier
       trayManager.addListener(this);
       final icon = _resolveTrayIconPath();
       await trayManager.setIcon(icon);
-      await trayManager.setToolTip('Pulse Diagnostics');
+      await trayManager.setToolTip('DiagnoseThat');
       await _rebuildTrayMenu();
       _trayReady = true;
     } catch (e) {
@@ -247,7 +247,7 @@ class BackgroundModeController extends ChangeNotifier
     if (!Platform.isWindows) return;
     final menu = Menu(
       items: [
-        MenuItem(key: 'open', label: 'Open Pulse'),
+        MenuItem(key: 'open', label: 'Open DiagnoseThat'),
         MenuItem.separator(),
         MenuItem(key: 'dashboard', label: 'Dashboard'),
         MenuItem(key: 'health', label: 'System Health'),
@@ -269,7 +269,7 @@ class BackgroundModeController extends ChangeNotifier
           checked: settings.backgroundMode,
         ),
         MenuItem.separator(),
-        MenuItem(key: 'exit', label: 'Exit Pulse'),
+        MenuItem(key: 'exit', label: 'Exit DiagnoseThat'),
       ],
     );
     try {
@@ -307,7 +307,7 @@ class BackgroundModeController extends ChangeNotifier
   Future<void> exitPulseUi() async {
     if (_exiting) return;
     _exiting = true;
-    logger.info('BackgroundMode', 'Exit Pulse (UI only; service unchanged)');
+    logger.info('BackgroundMode', 'Exit DiagnoseThat (UI only; service unchanged)');
     try {
       await windowManager.setPreventClose(false);
     } catch (_) {}

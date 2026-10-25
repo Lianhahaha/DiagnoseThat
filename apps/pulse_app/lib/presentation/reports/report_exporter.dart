@@ -68,7 +68,7 @@ class ReportExportInput {
   final bool darkHtml;
 }
 
-/// Builds report bytes/strings and writes under Downloads/Pulse/Reports
+/// Builds report bytes/strings and writes under Downloads/DiagnoseThat/Reports
 /// (or [SettingsController.exportDirectory] when set).
 class ReportExporter {
   ReportExporter({this.settings, ExportWriter? writer})
@@ -127,7 +127,7 @@ class ReportExporter {
     return _writer.write(
       fileName: name,
       bytes: bytes,
-      defaultSubfolder: const ['Pulse', 'Reports'],
+      defaultSubfolder: const ['DiagnoseThat', 'Reports'],
       customDirectory: settings?.exportDirectory ?? '',
     );
   }
@@ -179,7 +179,7 @@ class ReportExporter {
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Pulse — ${input.template.title}</title>
+<title>DiagnoseThat — ${input.template.title}</title>
 <style>
   body { font-family: Segoe UI, system-ui, sans-serif; background: $bg; color: $text;
          margin: 0; padding: 32px 40px; line-height: 1.45; }
@@ -199,9 +199,9 @@ class ReportExporter {
 </style>
 </head>
 <body>
-  <div class="brand">Pulse</div>
+  <div class="brand">DiagnoseThat</div>
   <h1>${_escapeHtml(input.template.title)}</h1>
-  <div class="meta">Exported $exportedAt · Pulse $kAppVersion</div>
+  <div class="meta">Exported $exportedAt · DiagnoseThat $kAppVersion</div>
   <section>
     <h2>System identity</h2>
     ${_kvTableHtml(identity)}
@@ -230,7 +230,7 @@ class ReportExporter {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'Pulse',
+              'DiagnoseThat',
               style: pw.TextStyle(
                 fontSize: 11,
                 fontWeight: pw.FontWeight.bold,
@@ -247,7 +247,7 @@ class ReportExporter {
             ),
             pw.SizedBox(height: 2),
             pw.Text(
-              'Exported $exportedAt · Pulse $kAppVersion',
+              'Exported $exportedAt · DiagnoseThat $kAppVersion',
               style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey700),
             ),
             pw.SizedBox(height: 12),

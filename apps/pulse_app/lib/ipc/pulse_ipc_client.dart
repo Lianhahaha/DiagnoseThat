@@ -784,7 +784,7 @@ class _IpcWorker {
       requestId: PulseIpcClient.kHandshakeRequestId,
       body: ClientHello(
         protocolVersion: kProtocolVersion,
-        clientName: 'Pulse',
+        clientName: 'DiagnoseThat',
         clientVersion: kAppVersion,
       ),
     );

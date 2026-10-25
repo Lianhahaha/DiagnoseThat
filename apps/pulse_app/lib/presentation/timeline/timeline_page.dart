@@ -447,7 +447,7 @@ class _TimelinePageState extends State<TimelinePage> {
       final saved = await ExportWriter().write(
         fileName: 'timeline_$stamp.$ext',
         bytes: utf8.encode(body),
-        defaultSubfolder: const ['Pulse', 'exports'],
+        defaultSubfolder: const ['DiagnoseThat', 'exports'],
       );
       await Clipboard.setData(ClipboardData(text: body));
       if (!mounted) return;
@@ -605,7 +605,7 @@ class _TimelinePageState extends State<TimelinePage> {
                           useBrandIllustration: true,
                           title: 'Could not load timeline',
                           message:
-                              'Pulse connected, but the historical snapshot failed.\n\n'
+                              'DiagnoseThat connected, but the historical snapshot failed.\n\n'
                               '${PulseUserErrors.fromMessage(loadError)}',
                           actionLabel: 'Retry',
                           onAction: session.reloadSnapshot,

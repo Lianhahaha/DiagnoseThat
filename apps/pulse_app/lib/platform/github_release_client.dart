@@ -63,7 +63,7 @@ class GitHubLatestRelease implements LatestReleaseSource {
       final request = await client.getUrl(_endpoint).timeout(timeout);
       request.headers
         ..set(HttpHeaders.acceptHeader, 'application/vnd.github+json')
-        ..set(HttpHeaders.userAgentHeader, 'Pulse/$kAppVersion');
+        ..set(HttpHeaders.userAgentHeader, 'DiagnoseThat/$kAppVersion');
       final response = await request.close().timeout(timeout);
       final body = await response.transform(utf8.decoder).join().timeout(
             timeout,
@@ -111,7 +111,7 @@ class GitHubLatestRelease implements LatestReleaseSource {
     final version = tag.startsWith('v') ? tag.substring(1) : tag;
     if (parseVersion(version) == null) {
       throw UpdateCheckException('The latest release tag "$tag" is not a '
-          'version Pulse understands.');
+          'version DiagnoseThat understands.');
     }
     final page = decoded['html_url'] as String? ?? '';
     final pageUrl = page.startsWith(releasePagePrefix)

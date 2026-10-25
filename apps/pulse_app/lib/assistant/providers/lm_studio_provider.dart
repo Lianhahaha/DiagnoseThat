@@ -42,9 +42,9 @@ class LmStudioProvider implements LocalAiProvider {
       'Start it in LM Studio → Developer.';
 
   String get _authRequiredDetail => apiToken == null
-      ? 'LM Studio requires an API key. Add it in Pulse Settings → Privacy, '
+      ? 'LM Studio requires an API key. Add it in DiagnoseThat Settings → Privacy, '
           'or turn off "Require API key" in LM Studio.'
-      : 'LM Studio rejected the API key saved in Pulse Settings → Privacy.';
+      : 'LM Studio rejected the API key saved in DiagnoseThat Settings → Privacy.';
 
   @override
   String get id => 'lm_studio';

@@ -183,7 +183,7 @@ class _ReportsPageState extends State<ReportsPage> {
   String _destinationLabel(SettingsController settings) {
     final custom = settings.exportDirectory.trim();
     if (custom.isNotEmpty) return custom;
-    return 'Downloads / Pulse / Reports (default)';
+    return 'Downloads / DiagnoseThat / Reports (default)';
   }
 
   @override
