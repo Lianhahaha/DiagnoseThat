@@ -33,6 +33,7 @@ import '../timeline/timeline_page.dart';
 import '../utils/pulse_snack.dart';
 import '../utils/pulse_user_errors.dart';
 import 'command_palette.dart';
+import 'shortcuts_dialog.dart';
 
 /// Sidebar / shell page indices.
 abstract final class PulseShellPages {
@@ -108,7 +109,7 @@ class _AppShellState extends State<AppShell> {
       label: 'Assistant',
       icon: LucideIcons.sparkles,
       pageIndex: PulseShellPages.assistant,
-      tooltip: 'Assistant — local AI',
+      tooltip: 'Assistant (Ctrl+7)',
     ),
     PulseNavItem(
       label: 'Settings',
@@ -410,6 +411,16 @@ class _AppShellState extends State<AppShell> {
         },
       ),
       PulseCommand(
+        id: 'shortcuts.show',
+        title: 'Keyboard shortcuts',
+        subtitle: 'Show every shell shortcut',
+        icon: LucideIcons.keyboard,
+        keywords: const ['help', 'keys', 'hotkeys', 'shortcuts'],
+        onInvoke: () {
+          unawaited(showShortcutsDialog(context));
+        },
+      ),
+      PulseCommand(
         id: 'search.focus',
         title: 'Focus search',
         subtitle: 'Open command palette',
@@ -456,6 +467,8 @@ class _AppShellState extends State<AppShell> {
             () => _selectPage(PulseShellPages.diagnostics),
         const SingleActivator(LogicalKeyboardKey.digit6, control: true):
             () => _selectPage(PulseShellPages.settings),
+        const SingleActivator(LogicalKeyboardKey.digit7, control: true):
+            () => _selectPage(PulseShellPages.assistant),
         const SingleActivator(LogicalKeyboardKey.digit1, meta: true):
             () => _selectPage(PulseShellPages.timeline),
         const SingleActivator(LogicalKeyboardKey.digit2, meta: true):
@@ -468,6 +481,8 @@ class _AppShellState extends State<AppShell> {
             () => _selectPage(PulseShellPages.diagnostics),
         const SingleActivator(LogicalKeyboardKey.digit6, meta: true):
             () => _selectPage(PulseShellPages.settings),
+        const SingleActivator(LogicalKeyboardKey.digit7, meta: true):
+            () => _selectPage(PulseShellPages.assistant),
       },
       child: Focus(
         autofocus: true,
