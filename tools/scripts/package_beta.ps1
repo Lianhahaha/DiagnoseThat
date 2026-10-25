@@ -1,28 +1,28 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Build Pulse release: Flutter Release payload + VC++ CRT + Inno Setup installer.
+  Build DiagnoseThat release: Flutter Release payload + VC++ CRT + Inno Setup installer.
 
 .DESCRIPTION
   Produces:
-    dist/Pulse-Setup-<version>-windows-x64.exe  (primary end-user installer)
-    dist/Pulse/                                  (payload)
-    dist/Pulse-<version>-windows-x64.zip        (optional payload archive)
+    dist/DiagnoseThat-Setup-<version>-windows-x64.exe  (primary end-user installer)
+    dist/DiagnoseThat/                                  (payload)
+    dist/DiagnoseThat-<version>-windows-x64.zip        (optional payload archive)
 
   The Setup.exe elevates via UAC, installs VC++ redist, registers/starts
-  PulseService (--install-start), and launches Pulse — no PowerShell.
+  PulseService (--install-start), and launches DiagnoseThat — no PowerShell.
 #>
 $ErrorActionPreference = "Stop"
 $Version = "1.5.0"
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$dist = Join-Path $root "dist\Pulse"
+$dist = Join-Path $root "dist\DiagnoseThat"
 $flutterBin = @(
   "$env:USERPROFILE\flutter\bin",
   "C:\Users\ozsin\flutter\bin"
 ) | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ($flutterBin) { $env:Path = "$flutterBin;$env:Path" }
 
-Write-Host "==> Packaging Pulse $Version"
+Write-Host "==> Packaging DiagnoseThat $Version"
 
 Write-Host "==> Cleaning $dist"
 if (Test-Path $dist) { Remove-Item -Recurse -Force $dist }
@@ -151,7 +151,7 @@ if (-not $crtDir -or -not (Test-Path $crtDir)) {
   throw "MSVC CRT redistributable folder not found under $redistRoot. Install VS Build Tools C++ redistributables."
 }
 Write-Host "    CRT source: $crtDir"
-# App-local next to Pulse.exe and PulseService.exe (licensed REDIST binaries).
+# App-local next to DiagnoseThat.exe and PulseService.exe (licensed REDIST binaries).
 Copy-Item (Join-Path $crtDir "*") -Destination $dist -Force
 Copy-Item (Join-Path $crtDir "*") -Destination (Join-Path $dist "service") -Force
 
@@ -178,21 +178,21 @@ foreach ($g in $guideExtras) {
 
 Write-Host "==> Writing README for payload folder (advanced / portable)"
 @"
-Pulse payload folder (advanced)
+DiagnoseThat payload folder (advanced)
 ===============================
 
-End users should run Pulse-Setup-$Version-windows-x64.exe instead of this folder.
+End users should run DiagnoseThat-Setup-$Version-windows-x64.exe instead of this folder.
 
 This folder is the install payload. For developers:
 
   service\PulseService.exe --install-start   (elevated)
-  Pulse.exe
+  DiagnoseThat.exe
 
 Privacy: local-only. No telemetry. Observation only.
 "@ | Set-Content -Path (Join-Path $dist "README_INSTALL.txt") -Encoding UTF8
 
 # Zip (payload / CI artifact - not the primary end-user deliverable)
-$zip = Join-Path $root "dist\Pulse-$Version-windows-x64.zip"
+$zip = Join-Path $root "dist\DiagnoseThat-$Version-windows-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip -Force }
 Write-Host "==> Creating $zip"
 Compress-Archive -Path (Join-Path $dist "*") -DestinationPath $zip -Force
@@ -210,8 +210,8 @@ $iscc = @(
 if (-not $iscc) {
   throw "ISCC.exe not found. Install Inno Setup 6 (winget install JRSoftware.InnoSetup)."
 }
-$iss = Join-Path $root "tools\installer\Pulse.iss"
-$setupOut = Join-Path $root "dist\Pulse-Setup-$Version-windows-x64.exe"
+$iss = Join-Path $root "tools\installer\DiagnoseThat.iss"
+$setupOut = Join-Path $root "dist\DiagnoseThat-Setup-$Version-windows-x64.exe"
 if (Test-Path $setupOut) { Remove-Item $setupOut -Force }
 & $iscc "/DPulsePayloadDir=$dist" "/DPulseOutDir=$(Join-Path $root 'dist')" $iss
 if ($LASTEXITCODE -ne 0) { throw "Inno Setup compile failed" }

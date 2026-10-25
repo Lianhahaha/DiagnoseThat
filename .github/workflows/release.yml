@@ -45,11 +45,11 @@ jobs:
         shell: pwsh
         run: |
           $script = Get-Content tools/scripts/package_beta.ps1 -Raw
-          $iss = Get-Content tools/installer/Pulse.iss -Raw
+          $iss = Get-Content tools/installer/DiagnoseThat.iss -Raw
           $pkg = [regex]::Match($script, '\$Version = "([^"]+)"').Groups[1].Value
           $setup = [regex]::Match($iss, '#define MyAppVersion "([^"]+)"').Groups[1].Value
           if (-not $pkg -or $pkg -ne $setup) {
-            throw "package_beta.ps1 ($pkg) and Pulse.iss ($setup) disagree on the version"
+            throw "package_beta.ps1 ($pkg) and DiagnoseThat.iss ($setup) disagree on the version"
           }
           if ("${{ github.ref_type }}" -eq "tag") {
             $tag = "${{ github.ref_name }}".TrimStart('v')
@@ -65,8 +65,8 @@ jobs:
         shell: pwsh
         run: |
           $files = Get-ChildItem dist -File | Where-Object {
-            $_.Name -like "Pulse-Setup-${{ steps.version.outputs.version }}-*.exe" -or
-            $_.Name -like "Pulse-${{ steps.version.outputs.version }}-windows-x64.zip"
+            $_.Name -like "DiagnoseThat-Setup-${{ steps.version.outputs.version }}-*.exe" -or
+            $_.Name -like "DiagnoseThat-${{ steps.version.outputs.version }}-windows-x64.zip"
           }
           if ($files.Count -ne 2) { throw "Expected Setup.exe and zip, found $($files.Count)" }
           $files | Get-FileHash -Algorithm SHA256 |
@@ -77,10 +77,10 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v7
         with:
-          name: pulse-${{ steps.version.outputs.version }}-windows
+          name: diagnosethat-${{ steps.version.outputs.version }}-windows
           path: |
-            dist/Pulse-Setup-${{ steps.version.outputs.version }}-windows-x64.exe
-            dist/Pulse-${{ steps.version.outputs.version }}-windows-x64.zip
+            dist/DiagnoseThat-Setup-${{ steps.version.outputs.version }}-windows-x64.exe
+            dist/DiagnoseThat-${{ steps.version.outputs.version }}-windows-x64.zip
             dist/SHA256SUMS.txt
           if-no-files-found: error
 
@@ -93,13 +93,13 @@ jobs:
           $v = "${{ steps.version.outputs.version }}"
           $notes = "docs/releases/v$v.md"
           $assets = @(
-            "dist/Pulse-Setup-$v-windows-x64.exe",
-            "dist/Pulse-$v-windows-x64.zip",
+            "dist/DiagnoseThat-Setup-$v-windows-x64.exe",
+            "dist/DiagnoseThat-$v-windows-x64.zip",
             "dist/SHA256SUMS.txt"
           )
           if (Test-Path $notes) {
-            gh release create "v$v" @assets --draft --title "Pulse v$v" --notes-file $notes
+            gh release create "v$v" @assets --draft --title "DiagnoseThat v$v" --notes-file $notes
           } else {
-            gh release create "v$v" @assets --draft --title "Pulse v$v" --generate-notes
+            gh release create "v$v" @assets --draft --title "DiagnoseThat v$v" --generate-notes
           }
           if ($LASTEXITCODE -ne 0) { throw "gh release create failed" }

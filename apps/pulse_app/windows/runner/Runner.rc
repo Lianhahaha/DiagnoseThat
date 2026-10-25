@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "Regn Creative" "\0"
-            VALUE "FileDescription", "Pulse" "\0"
+            VALUE "FileDescription", "DiagnoseThat" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "Pulse" "\0"
+            VALUE "InternalName", "DiagnoseThat" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 Regn Creative. All rights reserved." "\0"
-            VALUE "OriginalFilename", "Pulse.exe" "\0"
-            VALUE "ProductName", "Pulse" "\0"
+            VALUE "OriginalFilename", "DiagnoseThat.exe" "\0"
+            VALUE "ProductName", "DiagnoseThat" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

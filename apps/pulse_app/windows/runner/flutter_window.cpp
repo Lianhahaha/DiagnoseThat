@@ -44,7 +44,7 @@ bool FlutterWindow::OnCreate() {
       std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
           flutter_controller_->engine()->messenger(), kSingleInstanceChannel,
           &flutter::StandardMethodCodec::GetInstance());
-  // Let a second launch reach this window even when this Pulse runs at a
+  // Let a second launch reach this window even when this DiagnoseThat runs at a
   // higher integrity level (for example started by an elevated installer).
   // The message carries no data; it only asks this window to show itself.
   if (const UINT activate = PulseActivateMessage(); activate != 0) {
@@ -77,7 +77,7 @@ LRESULT
 FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
                               WPARAM const wparam,
                               LPARAM const lparam) noexcept {
-  // A second launch of Pulse asked for this window. Dart shows it through
+  // A second launch of DiagnoseThat asked for this window. Dart shows it through
   // window_manager, which also undoes "hidden in the tray".
   if (const UINT activate = PulseActivateMessage();
       activate != 0 && message == activate) {

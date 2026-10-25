@@ -8,7 +8,7 @@
   embeds service\PulseService.exe, patches AppxManifest for desktop6:Service +
   packagedServices, packs the MSIX, and validates the unpacked result.
 
-  GitHub / Inno Setup packaging is unchanged (package_beta.ps1 + Pulse.iss).
+  GitHub / Inno Setup packaging is unchanged (package_beta.ps1 + DiagnoseThat.iss).
 
   Outputs under dist/msix/:
     PulseDiagnostics-1.5.0-Store.msix
@@ -22,7 +22,7 @@ $Version = "1.5.0"
 $MsixVersion = "1.5.0.0"
 $ExpectedIdentity = "Regncreative.PulseDiagnostics"
 $ExpectedPublisher = "CN=72B69D57-C9E8-4280-AF56-B142286B0D20"
-$ExpectedDisplayName = "Pulse Diagnostics"
+$ExpectedDisplayName = "DiagnoseThat Diagnostics"
 $ExpectedPublisherDisplay = "Regncreative"
 $ExpectedPfn = "Regncreative.PulseDiagnostics_epm7gp6hnh3h0"
 $StoreId = "9PNDTLNTJ82T"
@@ -301,7 +301,7 @@ if ($crtDir) {
   Write-Host "    Copying CRT redistributables beside PulseService ($crtDir)"
   Copy-Item (Join-Path $crtDir "*") -Destination $serviceDestDir -Force
 } else {
-  Write-Host "WARNING: MSVC CRT folder not found; relying on app-local CRT next to Pulse.exe"
+  Write-Host "WARNING: MSVC CRT folder not found; relying on app-local CRT next to DiagnoseThat.exe"
 }
 
 $embedded = Join-Path $buildFilesFolder $ServiceRelPath
@@ -427,8 +427,8 @@ New-Item -ItemType Directory -Force -Path $uploadStage | Out-Null
 Copy-Item $msix $uploadStage -Force
 
 $pdbCandidates = @(
-  (Join-Path $workApp "build\windows\x64\runner\Release\Pulse.pdb"),
-  (Join-Path $workApp "build\windows\runner\Release\Pulse.pdb")
+  (Join-Path $workApp "build\windows\x64\runner\Release\DiagnoseThat.pdb"),
+  (Join-Path $workApp "build\windows\runner\Release\DiagnoseThat.pdb")
 ) | Where-Object { Test-Path $_ }
 if ($pdbCandidates.Count -gt 0) {
   $symDir = Join-Path $outDir "_symbols"
@@ -450,7 +450,7 @@ Compress-Archive -Path (Join-Path $uploadStage "*") -DestinationPath $zipTmp -Fo
 Move-Item $zipTmp $msixupload -Force
 
 $validation = New-Object System.Collections.Generic.List[string]
-[void]$validation.Add("Pulse Diagnostics Store package validation")
+[void]$validation.Add("DiagnoseThat Diagnostics Store package validation")
 [void]$validation.Add("Generated: $(Get-Date -Format o)")
 [void]$validation.Add("")
 [void]$validation.Add($identityReport)

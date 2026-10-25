@@ -1,4 +1,4 @@
-# Overnight soak for PulseService + Pulse UI (R1 validation tooling).
+# Overnight soak for PulseService + DiagnoseThat UI (R1 validation tooling).
 # Run manually; leave the machine awake. Emits CSV samples plus final JSON/MD reports.
 #
 # Example (8 hours):
@@ -11,9 +11,9 @@
 #
 # Prerequisites:
 #   - PulseService Running
-#   - Pulse.exe open (System Health or Timeline preferred)
+#   - DiagnoseThat.exe open (System Health or Timeline preferred)
 #   - Optional: rebuild pulse_diagnostics_ping for SOAK_METRICS (dropped / reconnects)
-#   - Optional: WER local dumps for Pulse.exe / PulseService.exe
+#   - Optional: WER local dumps for DiagnoseThat.exe / PulseService.exe
 
 param(
   [double]$Hours = 8,
@@ -42,7 +42,7 @@ $logicalCpus = [Environment]::ProcessorCount
 if ($logicalCpus -lt 1) { $logicalCpus = 1 }
 
 @"
-Pulse soak session
+DiagnoseThat soak session
 Started: $($startedAt.ToString("o"))
 Hours: $Hours
 Sample interval: ${SampleSeconds}s
@@ -196,8 +196,8 @@ function Get-PulseCrashDumps {
       if (-not (Test-Path -LiteralPath $d -ErrorAction Stop)) { continue }
       Get-ChildItem -LiteralPath $d -Filter "*.dmp" -ErrorAction Stop |
         Where-Object {
-          $_.Name -match '(?i)^(Pulse|PulseService|PulseMCP)' -or
-          $_.Name -match '(?i)Pulse'
+          $_.Name -match '(?i)^(DiagnoseThat|PulseService|PulseMCP)' -or
+          $_.Name -match '(?i)(DiagnoseThat|Pulse)'
         } |
         ForEach-Object {
           $found += [pscustomobject]@{
@@ -225,9 +225,9 @@ function Get-PulseEventLogErrors([datetime]$Since) {
         Get-WinEvent -FilterHashtable @{ LogName = $logName; StartTime = $since } -MaxEvents 200 -ErrorAction Stop |
           Where-Object {
             ($_.Level -in 2, 3) -and (
-              $_.ProviderName -match '(?i)Pulse' -or
-              $_.Message -match '(?i)Pulse(Service|MCP)?\.exe' -or
-              $_.Message -match '(?i)\\Pulse\\'
+              $_.ProviderName -match '(?i)(DiagnoseThat|Pulse)' -or
+              $_.Message -match '(?i)(DiagnoseThat|Pulse(Service|MCP)?)\.exe' -or
+              $_.Message -match '(?i)\\(Pulse|DiagnoseThat)\\'
             )
           } |
           Select-Object -First 30 |
@@ -292,7 +292,7 @@ $metricsStart = Invoke-SoakMetricsCapture "start"
 
 function Sample-Row {
   $now = Get-Date
-  $pulse = Get-ProcBundle "Pulse"
+  $pulse = Get-ProcBundle "DiagnoseThat"
   $svc = Get-ProcBundle "PulseService"
   $mcp = Get-ProcBundle "PulseMCP"
   $scm = Get-Service -Name "PulseService" -ErrorAction SilentlyContinue
@@ -323,7 +323,7 @@ function Sample-Row {
 
   if ($pulse.Count -eq 0) {
     $script:pulseMissingSamples++
-    Write-SoakEvent "WARN" "Pulse UI not running"
+    Write-SoakEvent "WARN" "DiagnoseThat UI not running"
   }
   if ($svc.Count -eq 0 -or $scmStatus -ne "Running") {
     $script:serviceMissingSamples++
@@ -342,7 +342,7 @@ function Sample-Row {
 
   return [pscustomobject]@{
     At = $now
-    Pulse = $pulse
+    DiagnoseThat = $pulse
     Service = $svc
     Mcp = $mcp
     PulseCpuPct = $pulseCpuPct
@@ -411,7 +411,7 @@ $serviceCpu = Series-Stats $serviceCpuSeries
 $mcpCpu = Series-Stats $mcpCpuSeries
 
 # Process uptimes at end
-$pulseEnd = Get-ProcBundle "Pulse"
+$pulseEnd = Get-ProcBundle "DiagnoseThat"
 $svcEnd = Get-ProcBundle "PulseService"
 $mcpEnd = Get-ProcBundle "PulseMCP"
 
@@ -443,7 +443,7 @@ $soakEventLines = @(Get-Content $eventLog -ErrorAction SilentlyContinue | Where-
 $exceptionDetected = [System.Collections.ArrayList]@()
 foreach ($line in $soakEventLines) {
   if ($line -match '\b(ERROR|EXCEPTION|CRASH|FATAL)\b') { [void]$exceptionDetected.Add([string]$line) }
-  elseif ($line -match 'Pulse UI not running|PulseService not running|PID changed') { [void]$exceptionDetected.Add([string]$line) }
+  elseif ($line -match 'DiagnoseThat UI not running|PulseService not running|PID changed') { [void]$exceptionDetected.Add([string]$line) }
 }
 $exceptionDetected = @($exceptionDetected | Select-Object -Unique)
 
@@ -477,11 +477,11 @@ if ($crashDumpsInWindow.Count -gt 0) {
 }
 $appErrors = @($eventLogHits | Where-Object { $_.level -match '(?i)error' -and $_.provider -ne "soak_overnight.ps1" })
 if ($appErrors.Count -gt 0) {
-  [void]$failReasons.Add("Windows Event Log error(s) related to Pulse: $($appErrors.Count)")
+  [void]$failReasons.Add("Windows Event Log error(s) related to DiagnoseThat: $($appErrors.Count)")
 }
 
 if ($pulseMissingSamples -gt 0) {
-  [void]$warnReasons.Add("Pulse UI missing on $pulseMissingSamples sample(s)")
+  [void]$warnReasons.Add("DiagnoseThat UI missing on $pulseMissingSamples sample(s)")
 }
 if ($serviceRestartCount -gt 0) {
   [void]$warnReasons.Add("PulseService restart(s) detected: $serviceRestartCount")
@@ -490,7 +490,7 @@ if ($serviceRestartCount -gt 0) {
 $uiGrowthMb = if ($null -ne $pulseMem.growth) { [math]::Round($pulseMem.growth / 1MB, 2) } else { $null }
 $svcGrowthMb = if ($null -ne $serviceMem.growth) { [math]::Round($serviceMem.growth / 1MB, 2) } else { $null }
 if ($null -ne $uiGrowthMb -and $uiGrowthMb -ge 50) {
-  [void]$warnReasons.Add("Pulse UI working-set growth ${uiGrowthMb} MB (>= 50 MB warn threshold)")
+  [void]$warnReasons.Add("DiagnoseThat UI working-set growth ${uiGrowthMb} MB (>= 50 MB warn threshold)")
 }
 if ($null -ne $svcGrowthMb -and $svcGrowthMb -ge 30) {
   [void]$warnReasons.Add("PulseService working-set growth ${svcGrowthMb} MB (>= 30 MB warn threshold)")
@@ -506,7 +506,7 @@ if (-not $metricsEnd.available) {
 }
 $realEventWarnings = @($eventLogHits | Where-Object { $_.level -match '(?i)warning' -and $_.provider -ne "soak_overnight.ps1" })
 if ($realEventWarnings.Count -gt 0) {
-  [void]$warnReasons.Add("Windows Event Log warning(s) related to Pulse")
+  [void]$warnReasons.Add("Windows Event Log warning(s) related to DiagnoseThat")
 }
 $eventScanTimeout = @($eventLogHits | Where-Object { $_.provider -eq "soak_overnight.ps1" })
 if ($eventScanTimeout.Count -gt 0) {
@@ -661,7 +661,7 @@ function Fmt-Bytes($b) {
 }
 
 $md = @"
-# Pulse soak report
+# DiagnoseThat soak report
 
 | Field | Value |
 |-------|-------|
@@ -676,7 +676,7 @@ $md = @"
 
 | Process | Uptime |
 |---------|--------|
-| Pulse | $(if ($null -eq $pulseUptimeSec) { "not running at end" } else { "$pulseUptimeSec s" }) |
+| DiagnoseThat | $(if ($null -eq $pulseUptimeSec) { "not running at end" } else { "$pulseUptimeSec s" }) |
 | PulseService | $(if ($null -ne $serviceUptimeSecFromSnap) { "$serviceUptimeSecFromSnap s (diagnostics snapshot)" } elseif ($null -eq $serviceUptimeSec) { "not running at end" } else { "$serviceUptimeSec s (process StartTime)" }) |
 | PulseMCP | $(if ($mcpEnd.Count -eq 0) { "not running" } elseif ($null -eq $mcpUptimeSec) { "running (uptime n/a)" } else { "$mcpUptimeSec s" }) |
 
@@ -684,7 +684,7 @@ $md = @"
 
 | Process | Peak | Average |
 |---------|------|---------|
-| Pulse | $(if ($null -eq $pulseCpu.peak) { "n/a" } else { $pulseCpu.peak }) | $(if ($null -eq $pulseCpu.average) { "n/a" } else { $pulseCpu.average }) |
+| DiagnoseThat | $(if ($null -eq $pulseCpu.peak) { "n/a" } else { $pulseCpu.peak }) | $(if ($null -eq $pulseCpu.average) { "n/a" } else { $pulseCpu.average }) |
 | PulseService | $(if ($null -eq $serviceCpu.peak) { "n/a" } else { $serviceCpu.peak }) | $(if ($null -eq $serviceCpu.average) { "n/a" } else { $serviceCpu.average }) |
 | PulseMCP | $(if ($null -eq $mcpCpu.peak) { "n/a" } else { $mcpCpu.peak }) | $(if ($null -eq $mcpCpu.average) { "n/a" } else { $mcpCpu.average }) |
 
@@ -692,7 +692,7 @@ $md = @"
 
 | Process | Peak | Final | Growth |
 |---------|------|-------|--------|
-| Pulse | $(Fmt-Bytes $pulseMem.peak) | $(Fmt-Bytes $pulseMem.last) | $(if ($null -eq $uiGrowthMb) { "n/a" } else { "$uiGrowthMb MB" }) |
+| DiagnoseThat | $(Fmt-Bytes $pulseMem.peak) | $(Fmt-Bytes $pulseMem.last) | $(if ($null -eq $uiGrowthMb) { "n/a" } else { "$uiGrowthMb MB" }) |
 | PulseService | $(Fmt-Bytes $serviceMem.peak) | $(Fmt-Bytes $serviceMem.last) | $(if ($null -eq $svcGrowthMb) { "n/a" } else { "$svcGrowthMb MB" }) |
 | PulseMCP | $(Fmt-Bytes $mcpMem.peak) | $(Fmt-Bytes $mcpMem.last) | $(if ($null -eq $mcpMem.growth) { "n/a" } else { "{0:N2} MB" -f ($mcpMem.growth / 1MB) }) |
 
@@ -712,7 +712,7 @@ $md = @"
 | Metric | Value |
 |--------|-------|
 | Service restarts (PID changes) | $serviceRestartCount |
-| Pulse UI missing samples | $pulseMissingSamples |
+| DiagnoseThat UI missing samples | $pulseMissingSamples |
 | PulseService missing samples | $serviceMissingSamples |
 | Exception / exit signals | $(@($exceptionDetected | Select-Object -Unique).Count) |
 | Crash dumps (soak window) | $($crashDumpsInWindow.Count) |
@@ -724,7 +724,7 @@ $(if (@($exceptionDetected | Select-Object -Unique).Count -eq 0) { "_None record
 ### Crash dumps
 $(if ($crashDumpsInWindow.Count -eq 0) { "_None in soak window._" } else { ($crashDumpsInWindow | ForEach-Object { "- ``$($_.path)`` ($($_.lastWriteTime))" }) -join "`n" })
 
-### Windows Event Log (Pulse-related)
+### Windows Event Log (DiagnoseThat-related)
 $(if ($eventLogHits.Count -eq 0) { "_None matched._" } else { ($eventLogHits | Select-Object -First 20 | ForEach-Object { "- [$($_.level)] $($_.timeCreated) $($_.provider) id=$($_.id): $($_.message)" }) -join "`n" })
 
 ## Verdict details
@@ -753,7 +753,7 @@ $summaryPath = Join-Path $OutDir "soak-summary.txt"
   "Samples: $($lines.Count)"
   "JSON: $jsonPath"
   "Markdown: $mdPath"
-  "Pulse WS growth MB: $(if ($null -eq $uiGrowthMb) { 'n/a' } else { $uiGrowthMb })"
+  "DiagnoseThat WS growth MB: $(if ($null -eq $uiGrowthMb) { 'n/a' } else { $uiGrowthMb })"
   "Service WS growth MB: $(if ($null -eq $svcGrowthMb) { 'n/a' } else { $svcGrowthMb })"
 ) | Set-Content -Path $summaryPath -Encoding UTF8
 

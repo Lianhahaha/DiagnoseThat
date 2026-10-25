@@ -1,18 +1,18 @@
-# Pulse Windows installer
+# DiagnoseThat Windows installer
 
 End-user deliverable is built with **Inno Setup 6**:
 
 ```text
-tools/installer/Pulse.iss  →  dist/Pulse-Setup-1.5.0-windows-x64.exe
+tools/installer/DiagnoseThat.iss  →  dist/DiagnoseThat-Setup-1.5.0-windows-x64.exe
 ```
 
 ## Behavior
 
 1. UAC elevation (`PrivilegesRequired=admin`)
-2. Install files under `%ProgramFiles%\Pulse`
+2. Install files under `%ProgramFiles%\DiagnoseThat`
 3. Quiet `VC_redist.x64.exe` when present
 4. `PulseService.exe --install-start` (SCM register + start + verify RUNNING)
-5. Launch `Pulse.exe`
+5. Launch `DiagnoseThat.exe`
 
 No PowerShell scripts are required for installation.
 
@@ -29,7 +29,7 @@ Requires Inno Setup **6.7 or later** for the dark wizard style.
 ## Branding
 
 The wizard uses the Midnight look (forced dark style, `#08080A` background,
-lime Pulse mark). Images live in `branding/` and are generated, not drawn by
+lime DiagnoseThat mark). Images live in `branding/` and are generated, not drawn by
 hand:
 
 ```powershell

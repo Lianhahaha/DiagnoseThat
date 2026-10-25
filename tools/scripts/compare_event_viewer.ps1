@@ -1,4 +1,4 @@
-# Compare recent Windows Event Log fields to what Pulse Timeline expects.
+# Compare recent Windows Event Log fields to what DiagnoseThat Timeline expects.
 # Observation only — does not modify Windows.
 #
 # Usage:
@@ -95,8 +95,8 @@ $report = [pscustomobject]@{
     "message"
   )
   notes = @(
-    "Compare these rows side-by-side with Pulse Timeline details for the same channel+record_id.",
-    "Pulse never invents missing fields; empty Pulse cells mean Wevtapi did not provide the value.",
+    "Compare these rows side-by-side with DiagnoseThat Timeline details for the same channel+record_id.",
+    "DiagnoseThat never invents missing fields; empty DiagnoseThat cells mean Wevtapi did not provide the value.",
     "Correlation hits only list known Event IDs present in this sample - absence is not a failure."
   )
 }
@@ -109,7 +109,7 @@ $md += ""
 $md += "Generated: $($report.generated_at)"
 $md += "Sample count: $($report.sample_count)"
 $md += ""
-$md += "## Field checklist (Event Viewer → Pulse details)"
+$md += "## Field checklist (Event Viewer → DiagnoseThat details)"
 $md += ""
 foreach ($f in $report.field_checklist) { $md += "- $f" }
 $md += ""
@@ -123,7 +123,7 @@ if ($hits.Count -eq 0) {
   }
 }
 $md += ""
-$md += "## How to validate in Pulse"
+$md += "## How to validate in DiagnoseThat"
 $md += ""
 $md += "1. Open Timeline and select an event with matching Channel + Record ID."
 $md += "2. Confirm Provider, Event ID, Level, Computer, Message match Event Viewer."

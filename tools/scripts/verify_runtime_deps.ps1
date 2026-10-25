@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Verify Pulse package includes MSVC CRT DLLs required on clean Windows.
+  Verify DiagnoseThat package includes MSVC CRT DLLs required on clean Windows.
 #>
 param(
   [string]$PackageDir = ""
@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 if (-not $PackageDir) {
-  $PackageDir = Join-Path $root "dist\Pulse"
+  $PackageDir = Join-Path $root "dist\DiagnoseThat"
 }
 
 $required = @(
@@ -31,7 +31,7 @@ function Assert-CrtBeside([string]$ExePath) {
   Write-Host "OK CRT beside $(Split-Path $ExePath -Leaf)"
 }
 
-Assert-CrtBeside (Join-Path $PackageDir "Pulse.exe")
+Assert-CrtBeside (Join-Path $PackageDir "DiagnoseThat.exe")
 Assert-CrtBeside (Join-Path $PackageDir "service\PulseService.exe")
 
 $redist = Join-Path $PackageDir "redist\VC_redist.x64.exe"
@@ -46,7 +46,7 @@ $dumpbin = Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft Visual Studio" -Rec
 
 if ($dumpbin) {
   foreach ($exe in @(
-      (Join-Path $PackageDir "Pulse.exe"),
+      (Join-Path $PackageDir "DiagnoseThat.exe"),
       (Join-Path $PackageDir "service\PulseService.exe")
     )) {
     $deps = (& $dumpbin /dependents $exe 2>&1 | Out-String).ToLowerInvariant()

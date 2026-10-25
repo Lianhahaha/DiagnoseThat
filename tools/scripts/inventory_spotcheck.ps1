@@ -134,7 +134,7 @@ $native.services = [ordered]@{
 }
 $drv = @(Get-Safe { Get-CimInstance Win32_SystemDriver })
 $native.drivers = [ordered]@{
-  source = 'Win32_SystemDriver (Driver subset; Pulse uses SCM SERVICE_DRIVER)'
+  source = 'Win32_SystemDriver (Driver subset; DiagnoseThat uses SCM SERVICE_DRIVER)'
   count = $drv.Count
 }
 
@@ -179,7 +179,7 @@ $md += ""
 $md += "Captured: $($native.host.captured_at)"
 $md += "Host: $($native.host.computer) / $($native.host.os)"
 $md += ""
-$md += "Read-only CIM/PnP/NetAdapter/Printer/Uninstall sources. Compare to Pulse Inventory dump."
+$md += "Read-only CIM/PnP/NetAdapter/Printer/Uninstall sources. Compare to DiagnoseThat Inventory dump."
 $md += ""
 $md += "## System (msinfo32)"
 $md += "- Motherboard: $($native.motherboard.manufacturer) / $($native.motherboard.product)"

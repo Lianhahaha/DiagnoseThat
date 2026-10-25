@@ -1,17 +1,17 @@
-; Pulse Windows installer (Inno Setup 6)
+; DiagnoseThat Windows installer (Inno Setup 6)
 ; Produced by tools/scripts/package_beta.ps1
 ;
-; End users double-click Pulse-Setup-*-windows-x64.exe
+; End users double-click DiagnoseThat-Setup-*-windows-x64.exe
 ; No PowerShell. No ExecutionPolicy. UAC elevation only.
 
-#define MyAppName "Pulse"
+#define MyAppName "DiagnoseThat"
 #define MyAppVersion "1.5.0"
 #define MyAppPublisher "Regncreative"
-#define MyAppURL "https://github.com/Regncreative/Pulse"
-#define MyAppExeName "Pulse.exe"
+#define MyAppURL "https://github.com/Lianhahaha/DiagnoseThat"
+#define MyAppExeName "DiagnoseThat.exe"
 
 #ifndef PulsePayloadDir
-  #define PulsePayloadDir "..\..\dist\Pulse"
+  #define PulsePayloadDir "..\..\dist\DiagnoseThat"
 #endif
 
 #ifndef PulseOutDir
@@ -26,14 +26,14 @@ AppVerName={#MyAppName} {#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
-DefaultDirName={autopf}\Pulse
-DefaultGroupName=Pulse
+DefaultDirName={autopf}\DiagnoseThat
+DefaultGroupName=DiagnoseThat
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#PulseOutDir}
-OutputBaseFilename=Pulse-Setup-{#MyAppVersion}-windows-x64
+OutputBaseFilename=DiagnoseThat-Setup-{#MyAppVersion}-windows-x64
 Compression=lzma2
 SolidCompression=yes
 ; Midnight look (ADR-012): forced dark, no bevel lines, app canvas color.
@@ -79,14 +79,14 @@ Source: "{#PulsePayloadDir}\*"; DestDir: "{app}"; Excludes: "redist\*,*.pdb"; Fl
 Source: "{#PulsePayloadDir}\redist\VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
-Name: "{group}\Pulse"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\Uninstall Pulse"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\Pulse"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{group}\DiagnoseThat"; Filename: "{app}\{#MyAppExeName}"
+Name: "{group}\Uninstall DiagnoseThat"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\DiagnoseThat"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 ; Launch after install — service is started in [Code] before this runs.
 Filename: "{app}\{#MyAppExeName}"; \
-  Description: "Launch Pulse"; \
+  Description: "Launch DiagnoseThat"; \
   Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
@@ -131,7 +131,7 @@ begin
     begin
       if (ResultCode <> 0) and (ResultCode <> 1638) and (ResultCode <> 3010) then
         MsgBox('Visual C++ Redistributable returned exit code ' + IntToStr(ResultCode) + '.' + #13#10 +
-               'Pulse may still run using bundled runtime DLLs.',
+               'DiagnoseThat may still run using bundled runtime DLLs.',
                mbInformation, MB_OK);
     end;
   end;
@@ -154,8 +154,8 @@ begin
   if ResultCode <> 0 then
   begin
     MsgBox('PulseService did not start (exit code ' + IntToStr(ResultCode) + ').' + #13#10 +
-           'Pulse will stay Offline until the service is running.' + #13#10 +
-           'Reboot and open Pulse from the Start menu, or re-run this installer.',
+           'DiagnoseThat will stay Offline until the service is running.' + #13#10 +
+           'Reboot and open DiagnoseThat from the Start menu, or re-run this installer.',
            mbError, MB_OK);
     Exit;
   end;
@@ -163,11 +163,11 @@ begin
   WizardForm.StatusLabel.Caption := 'PulseService is running.';
 end;
 
-{ Uninstall: close Pulse.exe from this install folder first. CloseApplications
-  only applies to Setup, so a Pulse running in the tray kept running after
+{ Uninstall: close DiagnoseThat.exe from this install folder first. CloseApplications
+  only applies to Setup, so a DiagnoseThat running in the tray kept running after
   the uninstall (its files were left for the next restart). AppMutex would
   only ask the user to close it, and would also block upgrades. Only this
-  folder's Pulse.exe is closed; copies elsewhere are left alone. }
+  folder's DiagnoseThat.exe is closed; copies elsewhere are left alone. }
 procedure ClosePulseFromInstallFolder;
 var
   Locator, Service, Processes, Process: Variant;
@@ -185,7 +185,7 @@ begin
     for I := 0 to Processes.Count - 1 do
     begin
       Process := Processes.ItemIndex(I);
-      Log('Closing Pulse.exe (PID ' +
+      Log('Closing DiagnoseThat.exe (PID ' +
           IntToStr(Process.Properties_.Item('ProcessId').Value) +
           ') before uninstall');
       { Late-bound like VBScript; ExecMethod_ without input parameters
@@ -195,7 +195,7 @@ begin
     if Processes.Count > 0 then
       Sleep(1000);  { Let Windows release the closed process's files. }
   except
-    Log('Could not close Pulse.exe before uninstall: ' + GetExceptionMessage);
+    Log('Could not close DiagnoseThat.exe before uninstall: ' + GetExceptionMessage);
   end;
 end;
 

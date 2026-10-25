@@ -26,9 +26,9 @@ if (-not (Test-Path -LiteralPath $ManifestPath)) {
 
 $errors = New-Object System.Collections.Generic.List[string]
 
-$pulseExe = Join-Path $ExtractDir "Pulse.exe"
+$pulseExe = Join-Path $ExtractDir "DiagnoseThat.exe"
 if (-not (Test-Path -LiteralPath $pulseExe)) {
-  [void]$errors.Add("Pulse.exe missing from package root")
+  [void]$errors.Add("DiagnoseThat.exe missing from package root")
 }
 
 $serviceExe = Join-Path $ExtractDir "service\PulseService.exe"
@@ -103,7 +103,7 @@ if ($errors.Count -gt 0) {
 }
 
 Write-Host "MSIX packaged-service validation PASSED"
-Write-Host "  Pulse.exe: OK"
+Write-Host "  DiagnoseThat.exe: OK"
 Write-Host "  service\PulseService.exe: OK"
 Write-Host "  desktop6:Service Name=PulseService StartAccount=localService StartupType=auto: OK"
 Write-Host "  packagedServices capability: OK"

@@ -13,20 +13,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();
 
-  // One Pulse per session. The handle is kept until exit; Windows releases
-  // it with the process. If the mutex cannot be created, Pulse still starts.
+  // One DiagnoseThat per session. The handle is kept until exit; Windows releases
+  // it with the process. If the mutex cannot be created, DiagnoseThat still starts.
   HANDLE instance_mutex =
       ::CreateMutexW(nullptr, FALSE, kSingleInstanceMutexName);
   if (instance_mutex != nullptr && ::GetLastError() == ERROR_ALREADY_EXISTS) {
     // A Windows sign-in launch (--background) must not pop the running
-    // window up; anything else is the user asking for Pulse.
+    // window up; anything else is the user asking for DiagnoseThat.
     const bool background_launch =
         std::find(command_line_arguments.begin(), command_line_arguments.end(),
                   "--background") != command_line_arguments.end();
     const UINT activate = PulseActivateMessage();
     if (!background_launch && activate != 0) {
       // This process was just started by the user, so it may hand the
-      // foreground to the running Pulse.
+      // foreground to the running DiagnoseThat.
       ::AllowSetForegroundWindow(ASFW_ANY);
       ::PostMessageW(HWND_BROADCAST, activate, 0, 0);
     }
@@ -51,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1440, 900);
-  if (!window.Create(L"Pulse", origin, size)) {
+  if (!window.Create(L"DiagnoseThat", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);

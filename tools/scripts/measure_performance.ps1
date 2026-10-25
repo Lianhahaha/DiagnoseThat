@@ -1,4 +1,4 @@
-# Measure Pulse process footprints and optional IPC ping (R1).
+# Measure DiagnoseThat process footprints and optional IPC ping (R1).
 # Does not invent metrics — reports only what Windows / ping tools return.
 
 param(
@@ -41,7 +41,7 @@ Write-Host "Waiting $IdleSeconds s for a quiet sample…"
 Start-Sleep -Seconds $IdleSeconds
 
 $samples = @(
-  (Get-ProcSample "Pulse"),
+  (Get-ProcSample "DiagnoseThat"),
   (Get-ProcSample "PulseService")
 )
 
@@ -64,7 +64,7 @@ $meta | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonPath -Encoding UTF8
 
 $summary = Join-Path $OutDir "perf-summary.txt"
 @(
-  "Pulse performance snapshot"
+  "DiagnoseThat performance snapshot"
   "Captured: $($meta.capturedAt)"
   "SCM PulseService: $($meta.pulseServiceScm)"
   ""
