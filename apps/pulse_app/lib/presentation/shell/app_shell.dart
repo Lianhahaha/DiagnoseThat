@@ -19,6 +19,7 @@ import '../../application/timeline_session_controller.dart';
 import '../../application/update_check_controller.dart';
 import '../../ipc/pulse_ipc_client.dart';
 import '../../logging/app_log_file.dart';
+import '../../platform/crash_folders.dart';
 import '../../platform/folder_opener.dart';
 import '../../platform/pulse_service_scm.dart';
 import '../../platform/windows_tools.dart';
@@ -333,6 +334,20 @@ class _AppShellState extends State<AppShell> {
       }
     }
 
+    Future<void> openCrashFolder(String label, Directory? dir) async {
+      try {
+        if (dir == null) {
+          if (!mounted) return;
+          PulseSnack.error(context, '$label is unavailable');
+          return;
+        }
+        await openDirectory(dir, createIfMissing: false);
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, '$label is not available: $e');
+      }
+    }
+
     Future<void> openExportsFolder() async {
       try {
         final custom = settings.exportDirectory;
@@ -554,6 +569,46 @@ class _AppShellState extends State<AppShell> {
         ],
         onInvoke: () {
           unawaited(openExportsFolder());
+        },
+      ),
+      PulseCommand(
+        id: 'crash.minidumps',
+        title: 'Open crash dump folder',
+        subtitle: 'Kernel dumps Windows wrote after a blue screen',
+        icon: LucideIcons.triangleAlert,
+        keywords: const [
+          'crash',
+          'dump',
+          'minidump',
+          'bsod',
+          'blue screen',
+          'stop error',
+        ],
+        onInvoke: () {
+          unawaited(
+            openCrashFolder('Crash dump folder', CrashFolders.minidumps()),
+          );
+        },
+      ),
+      PulseCommand(
+        id: 'crash.wer',
+        title: 'Open crash reports folder',
+        subtitle: 'Windows Error Reporting history for app crashes',
+        icon: LucideIcons.bug,
+        keywords: const [
+          'crash',
+          'wer',
+          'fault',
+          'application error',
+          'report',
+        ],
+        onInvoke: () {
+          unawaited(
+            openCrashFolder(
+              'Crash reports folder',
+              CrashFolders.werReports(),
+            ),
+          );
         },
       ),
       for (final tool in WindowsTool.values)
