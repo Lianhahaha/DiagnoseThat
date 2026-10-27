@@ -27,6 +27,7 @@ import '../utils/pulse_snack.dart';
 import '../utils/pulse_user_errors.dart';
 import '../../application/service_lifecycle_controller.dart';
 import '../../platform/pulse_service_scm.dart';
+import '../../platform/windows_tools.dart';
 
 /// Product targets from AGENTS.md / architecture doc 01 — display only; never
 /// invent live values to match these.
@@ -56,6 +57,7 @@ enum _DiagSectionId {
   collectors,
   performance,
   healthChecks,
+  windowsTools,
   advanced,
 }
 
@@ -150,6 +152,15 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
           status: ipcStatus,
           snapshotLatencyMs: diag.lastSnapshotLatencyMs,
           frameMetrics: frameMetrics,
+        ),
+      _DiagSectionId.windowsTools => _WindowsToolsCard(
+          onLaunch: (tool) async {
+            try {
+              await tool.launch();
+            } catch (e) {
+              _snackError('Could not open ${tool.label}: $e');
+            }
+          },
         ),
       _DiagSectionId.advanced => advanced
           ? _DeveloperToolsCard(
@@ -318,6 +329,7 @@ String _diagSectionTitle(_DiagSectionId id) => switch (id) {
       _DiagSectionId.collectors => 'Collectors',
       _DiagSectionId.performance => 'Performance',
       _DiagSectionId.healthChecks => 'Health Checks',
+      _DiagSectionId.windowsTools => 'Windows Tools',
       _DiagSectionId.advanced => 'Advanced',
     };
 
@@ -341,6 +353,8 @@ String _diagSectionSubtitle(
           : 'Frame timing and memory. Enable advanced diagnostics for more.',
       _DiagSectionId.healthChecks =>
         'Product budgets from AGENTS.md compared to observed samples.',
+      _DiagSectionId.windowsTools =>
+        'Launch the built-in Windows tools for hardware and software checks.',
       _DiagSectionId.advanced => advanced
           ? 'Developer tools for Timeline injection, restart, and export.'
           : 'Hidden until enabled in Settings → Diagnostics.',
@@ -365,6 +379,7 @@ class _DiagnosticsNav extends StatelessWidget {
     (_DiagSectionId.collectors, LucideIcons.layers, 'Collectors'),
     (_DiagSectionId.performance, LucideIcons.gauge, 'Performance'),
     (_DiagSectionId.healthChecks, LucideIcons.heartPulse, 'Health Checks'),
+    (_DiagSectionId.windowsTools, LucideIcons.externalLink, 'Windows Tools'),
     (_DiagSectionId.advanced, LucideIcons.wrench, 'Advanced'),
   ];
 
@@ -1306,6 +1321,46 @@ class _BudgetsCard extends StatelessWidget {
                 ? 'Unavailable while offline'
                 : formatBytesBinary(snap!.workingSetBytes),
             description: 'No hard AGENTS ceiling; track soak growth',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WindowsToolsCard extends StatelessWidget {
+  const _WindowsToolsCard({required this.onLaunch});
+
+  final Future<void> Function(WindowsTool tool) onLaunch;
+
+  @override
+  Widget build(BuildContext context) {
+    return _DiagSection(
+      title: 'Windows Tools',
+      icon: LucideIcons.externalLink,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'DiagnoseThat observes; these open Windows\u2019 own read-only '
+            'tools for what it does not collect itself: drivers, kernel '
+            'counters, hardware inventory, and disk layout.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (final tool in WindowsTool.values)
+                PulseButton(
+                  label: tool.label,
+                  icon: LucideIcons.externalLink,
+                  variant: PulseButtonVariant.secondary,
+                  tooltip: tool.purpose,
+                  onPressed: () => onLaunch(tool),
+                ),
+            ],
           ),
         ],
       ),
