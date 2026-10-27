@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -26,6 +27,7 @@ import '../health/widgets/health_spec_rows.dart';
 import '../utils/pulse_snack.dart';
 import '../utils/pulse_user_errors.dart';
 import '../../application/service_lifecycle_controller.dart';
+import '../../platform/crash_folders.dart';
 import '../../platform/pulse_service_scm.dart';
 import '../../platform/windows_tools.dart';
 
@@ -72,6 +74,18 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
   void _snackError(String message) {
     if (!mounted) return;
     PulseSnack.error(context, PulseUserErrors.fromMessage(message));
+  }
+
+  Future<void> _openCrashEvidence(String label, Directory? dir) async {
+    if (dir == null) {
+      _snackError('$label is unavailable');
+      return;
+    }
+    try {
+      await openCrashEvidence(dir);
+    } catch (e) {
+      _snackError('$label is not available: $e');
+    }
   }
 
   Future<void> _run(
@@ -161,6 +175,7 @@ class _DiagnosticsPageState extends State<DiagnosticsPage> {
               _snackError('Could not open ${tool.label}: $e');
             }
           },
+          onOpenCrash: _openCrashEvidence,
         ),
       _DiagSectionId.advanced => advanced
           ? _DeveloperToolsCard(
@@ -1329,9 +1344,13 @@ class _BudgetsCard extends StatelessWidget {
 }
 
 class _WindowsToolsCard extends StatelessWidget {
-  const _WindowsToolsCard({required this.onLaunch});
+  const _WindowsToolsCard({
+    required this.onLaunch,
+    required this.onOpenCrash,
+  });
 
   final Future<void> Function(WindowsTool tool) onLaunch;
+  final Future<void> Function(String label, Directory? dir) onOpenCrash;
 
   @override
   Widget build(BuildContext context) {
@@ -1360,6 +1379,43 @@ class _WindowsToolsCard extends StatelessWidget {
                   tooltip: tool.purpose,
                   onPressed: () => onLaunch(tool),
                 ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Crash evidence',
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: PulseTokens.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Folders Windows fills after a bugcheck or an application '
+            'crash \u2014 opened only when they exist, never created.',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              PulseButton(
+                label: 'Crash Dumps',
+                icon: LucideIcons.folder,
+                variant: PulseButtonVariant.secondary,
+                tooltip: 'Kernel dumps written after a blue screen',
+                onPressed: () =>
+                    onOpenCrash('Crash dump folder', CrashFolders.minidumps()),
+              ),
+              PulseButton(
+                label: 'Crash Reports',
+                icon: LucideIcons.folder,
+                variant: PulseButtonVariant.secondary,
+                tooltip: 'Windows Error Reporting application crashes',
+                onPressed: () =>
+                    onOpenCrash('Crash report folder', CrashFolders.werReports()),
+              ),
             ],
           ),
         ],

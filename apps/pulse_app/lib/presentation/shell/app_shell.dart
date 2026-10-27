@@ -335,13 +335,13 @@ class _AppShellState extends State<AppShell> {
     }
 
     Future<void> openCrashFolder(String label, Directory? dir) async {
+      if (dir == null) {
+        if (!mounted) return;
+        PulseSnack.error(context, '$label is unavailable');
+        return;
+      }
       try {
-        if (dir == null) {
-          if (!mounted) return;
-          PulseSnack.error(context, '$label is unavailable');
-          return;
-        }
-        await openDirectory(dir, createIfMissing: false);
+        await openCrashEvidence(dir);
       } catch (e) {
         if (!mounted) return;
         PulseSnack.error(context, '$label is not available: $e');
