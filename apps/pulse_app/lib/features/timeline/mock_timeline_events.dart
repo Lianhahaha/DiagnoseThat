@@ -1,4 +1,5 @@
 import 'package:pulse_protocol/pulse_wire.dart';
+///aight
 
 /// Returns a fresh copy of the development mock snapshot
 /// (same wire model as IPC, gated behind PULSE_MOCK_TIMELINE).
