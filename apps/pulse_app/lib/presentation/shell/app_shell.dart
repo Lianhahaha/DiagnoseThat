@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import '../../app/dev_flags.dart';
@@ -331,6 +333,30 @@ class _AppShellState extends State<AppShell> {
       }
     }
 
+    Future<void> openExportsFolder() async {
+      try {
+        final custom = settings.exportDirectory;
+        final Directory dir;
+        if (custom.isNotEmpty) {
+          dir = Directory(custom);
+        } else {
+          final root = await getDownloadsDirectory();
+          if (root == null) {
+            if (!mounted) return;
+            PulseSnack.error(context, 'Downloads folder is unavailable');
+            return;
+          }
+          dir = Directory(
+            [root.path, 'DiagnoseThat'].join(Platform.pathSeparator),
+          );
+        }
+        await openDirectory(dir);
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Failed: $e');
+      }
+    }
+
     final serviceStateLabel = switch (service.state) {
       PulseServiceScmState.running => 'Running',
       PulseServiceScmState.stopped => 'Stopped',
@@ -512,6 +538,22 @@ class _AppShellState extends State<AppShell> {
         keywords: const ['logs', 'log', 'folder', 'explorer', 'open'],
         onInvoke: () {
           unawaited(openLogsFolder());
+        },
+      ),
+      PulseCommand(
+        id: 'exports.open',
+        title: 'Open exports folder',
+        subtitle: 'Show saved reports, logs, and snapshots',
+        icon: LucideIcons.folder,
+        keywords: const [
+          'exports',
+          'reports',
+          'snapshots',
+          'folder',
+          'downloads',
+        ],
+        onInvoke: () {
+          unawaited(openExportsFolder());
         },
       ),
       for (final tool in WindowsTool.values)
