@@ -562,6 +562,18 @@ class _ServiceCard extends StatelessWidget {
               compact: true,
               rows: [
                 HealthSpecRow(
+                  label: 'Windows edition',
+                  value: snap?.windowsEdition.isNotEmpty == true
+                      ? snap!.windowsEdition
+                      : unavailable ?? kUnavailableDash,
+                ),
+                HealthSpecRow(
+                  label: 'Windows version',
+                  value: snap?.windowsVersion.isNotEmpty == true
+                      ? snap!.windowsVersion
+                      : unavailable ?? kUnavailableDash,
+                ),
+                HealthSpecRow(
                   label: 'Build version',
                   value: snap?.buildVersion.isNotEmpty == true
                       ? snap!.buildVersion
