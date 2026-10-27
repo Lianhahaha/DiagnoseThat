@@ -19,6 +19,7 @@ import '../../ipc/pulse_ipc_client.dart';
 import '../../logging/app_log_file.dart';
 import '../../platform/folder_opener.dart';
 import '../../platform/pulse_service_scm.dart';
+import '../../platform/windows_tools.dart';
 import '../assistant/assistant_host.dart';
 import '../assistant/assistant_page.dart';
 import '../components/pulse_content_frame.dart';
@@ -49,6 +50,19 @@ abstract final class PulseShellPages {
   static const assistant = 6;
   static const count = 7;
 }
+
+/// Palette icons for the built-in Windows diagnostic tools.
+const Map<WindowsTool, IconData> kWindowsToolIcons = {
+  WindowsTool.eventViewer: LucideIcons.list,
+  WindowsTool.reliabilityMonitor: LucideIcons.history,
+  WindowsTool.resourceMonitor: LucideIcons.gauge,
+  WindowsTool.performanceMonitor: LucideIcons.activity,
+  WindowsTool.deviceManager: LucideIcons.usb,
+  WindowsTool.systemInformation: LucideIcons.info,
+  WindowsTool.diskManagement: LucideIcons.hardDrive,
+  WindowsTool.services: LucideIcons.server,
+  WindowsTool.directXDiagnostics: LucideIcons.monitor,
+};
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -308,6 +322,15 @@ class _AppShellState extends State<AppShell> {
       }
     }
 
+    Future<void> launchWindowsTool(WindowsTool tool) async {
+      try {
+        await tool.launch();
+      } catch (e) {
+        if (!mounted) return;
+        PulseSnack.error(context, 'Could not open ${tool.label}: $e');
+      }
+    }
+
     final serviceStateLabel = switch (service.state) {
       PulseServiceScmState.running => 'Running',
       PulseServiceScmState.stopped => 'Stopped',
@@ -491,6 +514,17 @@ class _AppShellState extends State<AppShell> {
           unawaited(openLogsFolder());
         },
       ),
+      for (final tool in WindowsTool.values)
+        PulseCommand(
+          id: 'windows.${tool.name}',
+          title: 'Open ${tool.label}',
+          subtitle: tool.purpose,
+          icon: kWindowsToolIcons[tool] ?? LucideIcons.monitor,
+          keywords: ['windows', tool.label.toLowerCase(), ...tool.keywords],
+          onInvoke: () {
+            unawaited(launchWindowsTool(tool));
+          },
+        ),
       PulseCommand(
         id: 'service.start',
         title: 'Start PulseService',
